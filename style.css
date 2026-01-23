@@ -14,26 +14,32 @@ body {
     display: flex;
     justify-content: center;
 }
-#X01 {
-    margin-right: 10px;
-}
-#cricket {
-    margin-right: 10px;
-}
-#around-the-clock {
-    margin-right: 10px;
-}
-#einhunderteinundzewanzig {
-    margin-right: 10px;
-}
-#freies-spiel {
-    margin-right: 10px;
-}
-#add-player {
-    margin-right: 10px;
-}
-#add-bot {
-    margin-right: 10px;
+    #X01 {
+        margin-right: 10px;
+    }
+    #cricket {
+        margin-right: 10px;
+    }
+    #around-the-clock {
+        margin-right: 10px;
+    }
+    #einhunderteinundzewanzig {
+        margin-right: 10px;
+    }
+    #freies-spiel {
+        margin-right: 10px;
+    }
+    #add-player {
+        margin-right: 10px;
+    }
+    #add-bot {
+        margin-right: 10px;
+    }
+
+.mode {
+    background-color: white;
+    border-radius: 6px,
+
 }
 
 .start {
@@ -52,7 +58,7 @@ body {
     border-radius: 6px;
 } 
 .start button{
-     width: 15vw;
+    width: 15vw;
     height: 4vh;
     color: rgb(20, 71, 240);
     background-color: white;
@@ -73,3 +79,30 @@ body {
 }
 
 /* game-page */
+.scoring-stats {
+    background-color: white;
+    border-radius: 6px;
+    margin-top: 3vh;
+}
+
+
+/*buttons*/
+.score-button button {
+    font-size: 3vw; 
+    color: rgb(20, 71, 240);
+    background-color: white;
+    border: none;
+    border-radius: 6px;
+}
+.score-button-numbers button{
+    width: 10vw;
+    height: 10vh;
+}
+.score-button-extra button {
+    height: 10vh;
+    width: 20.5vw;
+}
+.score-button button:hover {
+    background-color: rgb(20, 71, 240);
+    color: white;
+}
