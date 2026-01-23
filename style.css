@@ -9,7 +9,7 @@ body {
     border-radius: 6px;
 }
 
-/* main-page */
+/********* main-page *********/
 .selection-btn {
     display: flex;
     justify-content: center;
@@ -78,13 +78,16 @@ body {
     color: white;
 }
 
-/* game-page */
+/********* game-page *********/
 .scoring-stats {
     background-color: white;
     border-radius: 6px;
     margin-top: 3vh;
 }
-
+.score-button {
+    display: flex;
+    justify-content: center;
+}
 
 /*buttons*/
 .score-button button {
@@ -93,6 +96,8 @@ body {
     background-color: white;
     border: none;
     border-radius: 6px;
+    display: flex;
+    justify-content: center;
 }
 .score-button-numbers button{
     width: 10vw;
@@ -100,7 +105,7 @@ body {
 }
 .score-button-extra button {
     height: 10vh;
-    width: 20.5vw;
+    width: 20.2vw;
 }
 .score-button button:hover {
     background-color: rgb(20, 71, 240);
