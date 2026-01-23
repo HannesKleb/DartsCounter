@@ -1,0 +1,75 @@
+/* global */
+body {
+    font-family: Verdana, sans-serif;
+    background-color: white;
+}
+.content {
+    padding: 2vw;
+    background-color: #e5e5e5;
+    border-radius: 6px;
+}
+
+/* main-page */
+.selection-btn {
+    display: flex;
+    justify-content: center;
+}
+#X01 {
+    margin-right: 10px;
+}
+#cricket {
+    margin-right: 10px;
+}
+#around-the-clock {
+    margin-right: 10px;
+}
+#einhunderteinundzewanzig {
+    margin-right: 10px;
+}
+#freies-spiel {
+    margin-right: 10px;
+}
+#add-player {
+    margin-right: 10px;
+}
+#add-bot {
+    margin-right: 10px;
+}
+
+.start {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/*button*/
+.selection-btn button {
+    width: 15vw;
+    height: 3vh;
+    color: black;
+    background-color: white;
+    border: none;
+    border-radius: 6px;
+} 
+.start button{
+     width: 15vw;
+    height: 4vh;
+    color: rgb(20, 71, 240);
+    background-color: white;
+    border: none;
+    border-radius: 6px;
+
+}
+.selection-btn button:hover {
+    background-color: lightgray;
+}
+.selection-btn button:active {
+    background-color: darkgrey;
+    color: white;
+}
+.start button:hover {
+    background-color: rgb(20, 71, 240);
+    color: white;
+}
+
+/* game-page */
