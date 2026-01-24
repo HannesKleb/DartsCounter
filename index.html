@@ -17,25 +17,39 @@
                 <h2>Spielmodus</h2> 
             </div>
             <div class="selection-btn"> 
-                <button id="X01">
+                <button id="X01-btn" onclick="showMode(`mode-X01`)">
                     X01
                 </button>
-                <button id="cricket">
+                <button id="cricket-btn" onclick="showMode(`mode-cricket`)">
                     Cricket
                 </button>
-                <button id="around-the-clock">
+                <button id="around-the-clock-btn" onclick="showMode(`mode-around-the-clock`)">
                     Around the Clock
                 </button>
-                <button id="einhunderteinundzewanzig">
+                <button id="g121-btn" onclick="showMode(`mode-g121`)">
                     121
                 </button>
-                <button id="freies-spiel">
+                <button id="freies-spiel-btn" onclick="showMode(`mode-freies-spiel`)">
                     Freies Spiel
                 </button>
             </div>
         </div>
         <div class="mode">
-            
+            <div id="mode-X01" style="display:block;">
+                
+            </div>
+            <div id="mode-cricket" style="display:none;">
+                
+            </div>
+            <div id="mode-around-the-clock" style="display:none;">
+                
+            </div>
+            <div id="mode-g121" style="display:none;">
+                
+            </div>
+            <div id="mode-freies-spiel" style="display:none;">
+                
+            </div>
         </div>
         <div class="player-selection">
             <div class="player-selection-title"> 

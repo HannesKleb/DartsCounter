@@ -14,32 +14,36 @@ body {
     display: flex;
     justify-content: center;
 }
-    #X01 {
+    #X01-btn {
         margin-right: 10px;
     }
-    #cricket {
+    #cricket-btn {
         margin-right: 10px;
     }
-    #around-the-clock {
+    #around-the-clock-btn {
         margin-right: 10px;
     }
-    #einhunderteinundzewanzig {
+    #g121-btn {
         margin-right: 10px;
     }
-    #freies-spiel {
+    #freies-spiel-btn {
         margin-right: 10px;
     }
-    #add-player {
+    #add-player-btn {
         margin-right: 10px;
     }
-    #add-bot {
+    #add-bot-btn {
         margin-right: 10px;
     }
 
+.mode-selection {
+
+}
 .mode {
+    margin-top: 0.5vh;
     background-color: white;
+    width: 75vw;
     border-radius: 6px,
-
 }
 
 .start {
@@ -69,7 +73,7 @@ body {
 .selection-btn button:hover {
     background-color: lightgray;
 }
-.selection-btn button:active {
+.selection-btn button.active {
     background-color: darkgrey;
     color: white;
 }
