@@ -27,3 +27,6 @@ function showMode(id) {
     }
 }
 
+function start() {
+    window.location.href = "game.html";
+}
