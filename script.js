@@ -30,3 +30,8 @@ function showMode(id) {
 function start() {
     window.location.href = "game.html";
 }
+
+function scoreLeft(id) {
+    const scoreLeft = document.getElementById(id);
+    scoreLeft.textContent = "501";
+}
