@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darts Counter</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Darts Counter</h1>
+        <div class="page">
+            <h2>Statistiken</h2>
+        </div>
+    </div>
+    <div class="content">
+        <div class="selection-btn"> 
+            <button class="selection-button" id="X01-btn" onclick="showMode(`X01-stats`)">
+                X01
+            </button>
+            <button class="selection-button" id="cricket-btn" onclick="showMode(`cricket-stats`)">
+                Cricket
+            </button>
+            <button class="selection-button" id="around-the-clock-btn" onclick="showMode(`around-the-clock-stats`)">
+                Around the Clock
+            </button>
+            <button class="selection-button" id="g121-btn" onclick="showMode(`g121-stats`)">
+                121
+            </button>
+            <button class="selection-button" id="freies-spiel-btn" onclick="showMode(`freies-spiel-stats`)">
+                Freies Spiel
+            </button>
+        </div>
+        <div id="X01-stats">
+            <div class="game-stats">
+
+            </div>
+            <div class="leg-stats">
+
+            </div>
+            <div class="average-stats">
+
+            </div>
+            <div class="point-stats">
+
+            </div>
+            <div class="checkout-stats">
+
+            </div>
+        </div>
+        <div id="cricket-stats">
+            <div class="game-stats">
+
+            </div>
+            <div class="leg-stats">
+
+            </div>
+        </div>
+        <div id="around-the-clock-stats">
+            <div class="game-stats">
+
+            </div>
+            <div class="leg-stats">
+
+            </div>
+        </div>
+        <div id="g121-stats">
+            <div class="game-stats">
+
+            </div>
+            <div class="leg-stats">
+
+            </div>
+        </div>
+        <div id="freies-spiel-stats">
+            <div class="game-stats">
+
+            </div>
+            <div class="leg-stats">
+
+            </div>
+            <div class="average-stats">
+
+            </div>
+            <div class="point-stats">
+
+            </div>
+        </div>
+    </div>
+    <div class="bar">
+        
+    </div>
+</body>
+</html>

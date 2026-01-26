@@ -1,12 +1,4 @@
-/********* VARIABLES *********/
-
-//buttons
-/*const X01Btn = document.getElementById("X01-btn");
-const cricketBtn = document.getElementById("cricket-btn");
-const aroundTheClockBtn = document.getElementById("around-the-clock-btn");
-const g121Btn = document.getElementById("g121-btn");
-const freieSpielBtn = document.getElementById("freies-spiel-btn");*/
-
+/********* main-page *********/
 function showMode(id) {
     const allModes = document.querySelectorAll('.mode > div');
     allModes.forEach(mode => {
@@ -26,15 +18,25 @@ function showMode(id) {
         activeBtn.classList.add('active');
     }
 }
-
 function start() {
     window.location.href = "X01.html";
 }
+function bar(link) {
+    window.location.href = link;
+}
 
-function scoreLeft(id) {
-    const scoreLeft = document.getElementById(id);
-    scoreLeft.textContent = "501";
+/********* X01-page *********/
+function scoreLeft() {
+    document.getElementById("score-left1").textContent = "501";
 }
 function backBtn() {
     window.location.href = "index.html";
 }
+
+/********* cricket-page *********/
+
+/********* aroundTheClock-page *********/
+
+/********* 121-page *********/
+
+/********* freiesSpiel-page *********/

@@ -9,9 +9,13 @@
 </head>
 <body>
     <div class="header">
-        <h1>Spiel</h1>
+        <h1>Darts Counter</h1>
+         <div class="page">
+            <h2>Spiel</h2>
+        </div>
     </div>
     <div class="content">
+       
         <div class="back-btn" >
             <button id="back-btn" onclick="backBtn()">
                 Zurück
@@ -23,7 +27,7 @@
                     <div id="player1">
                         Spieler 1
                     </div>
-                    <div class="score-left" id="score-left1">
+                    <div class="score-left" id="score-left1" onload="scoreLeft()">
                         144
                     </div>
                 </div>
@@ -169,7 +173,7 @@
             <table>
                 <tbody>
                     <tr>
-                        <td class="score-button-numbers"><button onclick="textContent(`score-left1`)" id="1">1</button></td>
+                        <td class="score-button-numbers"><button id="1">1</button></td>
                         <td class="score-button-numbers"><button id="2">2</button></td>
                         <td class="score-button-numbers"><button id="3">3</button></td>
                         <td class="score-button-numbers"><button id="4">4</button></td>

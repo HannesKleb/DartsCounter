@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +10,15 @@
 <body>
     <div class="header">
         <h1>Darts Counter</h1>
+        <div class="page">
+            <h2>Hauptseite</h2>
+        </div>
     </div>
     <div class="content">
+        
         <div class="mode-selection">
             <div class="mode-selection-title"> 
-                <h2>Spielmodus</h2> 
+                <h3>Spielmodus</h3> 
             </div>
             <div class="selection-btn"> 
                 <button class="selection-button" id="X01-btn" onclick="showMode(`mode-X01`)">
@@ -53,7 +57,7 @@
         </div>
         <div class="player-selection">
             <div class="player-selection-title"> 
-                <h2>Spieler</h2> 
+                <h3>Spieler</h3> 
             </div>
             <div class="selection-btn">
                 <button class="selection-button" id="add-player">
@@ -74,7 +78,11 @@
         </div>
     </div>
     <div class="bar">
-        
+        <button class="bar-btn" id="main" onclick="bar(`index.html`)">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar(`player.html`)">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
     </div>
 </body>
 </html>
