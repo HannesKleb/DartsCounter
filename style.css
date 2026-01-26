@@ -9,20 +9,46 @@ body {
     border-radius: 6px;
 }
 /********* main-pages-global *********/
-.bar-btn {
-    width: 90vw;
-    height: 6vh;
-    background: white;
+.bar {
+    padding: 1vh 4vw;
+    align-items: center;
+    background-color: grey;
+    border-radius: 6px;
     display: flex;
     justify-content: center;
-    margin-right: 10pxs;
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
 }
-.bar-btn button{
-    border: none;
+.bar-btn {
+    color: rgb(0, 205, 0);
     background-color: white;
-    margin-right: 10pxs;
+    width: 15vw;
+    height: 4vh;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+    border-radius: 6px;
 }
-
+.bar-btn-active {
+    color: white;
+    background-color: rgb(0, 205, 0);
+    width: 20vw;
+    height: 4vh;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+    border-radius: 6px;
+}
+.bar button:hover {
+    background-color:lightgray;
+    color: rgb(0, 205, 0);
+}
 /********* main-page *********/
 .selection-btn {
     display: flex;
@@ -51,14 +77,6 @@ body {
     margin-top: 10px;
 }
 
-.bar {
-    display: flex;
-    justify-content: center;
-    background-color: white;
-    position: sticky;
-    bottom: 0;
-}
-
 /*button*/
 .selection-btn button {
     padding: 1vh 7vw;
@@ -70,11 +88,10 @@ body {
 } 
 .start button{
     padding: 2vh 7vw;
-    color: rgb(0, 205, 0);
-    background-color: white;
+    background-color: rgb(0, 205, 0);
+    color: white;
     border: none;
     border-radius: 6px;
-
 }
 .selection-btn button:hover {
     background-color: lightgray;
@@ -84,8 +101,8 @@ body {
     color: white;
 }
 .start button:hover {
-    background-color: rgb(0, 205, 0);
-    color: white;
+    color: rgb(0, 205, 0);
+    background-color: white;
 }
 
 /********* stats-page *********/

@@ -15,10 +15,45 @@
         </div>
     </div>
     <div class="content">
-        
+        <div class="selection-btn"> 
+            <button class="selection-button" id="X01-btn" onclick="showMode(`X01-games`)">
+                X01
+            </button>
+            <button class="selection-button" id="cricket-btn" onclick="showMode(`cricket-games`)">
+                Cricket
+            </button>
+            <button class="selection-button" id="around-the-clock-btn" onclick="showMode(`around-the-clock-games`)">
+                Around the Clock
+            </button>
+            <button class="selection-button" id="g121-btn" onclick="showMode(`g121-games`)">
+                121
+            </button>
+            <button class="selection-button" id="freies-spiel-btn" onclick="showMode(`freies-spiel-games`)">
+                Freies Spiel
+            </button>
+        </div>
+        <div id="X01-games">
+
+        </div>
+        <div id="cricket-games">
+            
+        </div>
+        <div id="around-the-clock-games">
+            
+        </div>
+        <div id="g121-games">
+            
+        </div>
+        <div id="freies-spiel-games">
+            
+        </div>
     </div>
     <div class="bar">
-        
+        <button class="bar-btn" id="main" onclick="bar(`index.html`)">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar(`player.html`)">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
+        <button class="bar-btn-active" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
     </div>
 </body>
 </html>
