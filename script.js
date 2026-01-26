@@ -28,10 +28,13 @@ function showMode(id) {
 }
 
 function start() {
-    window.location.href = "game.html";
+    window.location.href = "X01.html";
 }
 
 function scoreLeft(id) {
     const scoreLeft = document.getElementById(id);
     scoreLeft.textContent = "501";
+}
+function backBtn() {
+    window.location.href = "index.html";
 }

@@ -37,9 +37,17 @@ body {
     margin-top: 10px;
 }
 
+.bar {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    position: sticky;
+    bottom: 0;
+}
+
 /*button*/
 .selection-btn button {
-    padding: 2vh 7vw;
+    padding: 1vh 5vw;
     color: black;
     background-color: white;
     border: none;
@@ -67,6 +75,11 @@ body {
 }
 
 /********* game-page *********/
+.back-btn {
+    position: sticky;
+    top: 1vh;
+}
+
 .stats {
     display: flex;
     justify-content: center;
@@ -95,9 +108,21 @@ body {
 .score-button {
     display: flex;
     justify-content: center;
+    background-color: #e5e5e5;
+    position: sticky;
+    bottom: 0;
 }
 
 /*buttons*/
+.back-btn button {
+    font-size: 2vh;
+    padding: 0.5vh 0.5vw;
+    color: rgb(20, 71, 240);
+    background-color: white;
+    border-radius: 6px;
+    border: none;
+}
+
 .score-button button {
     font-size: 3vh; 
     color: rgb(20, 71, 240);
@@ -107,6 +132,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.back-btn button:hover {
+    background-color: rgb(20, 71, 240);
+    color: white;
 }
 .score-button-numbers button{
     width: 10vw;
