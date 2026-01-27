@@ -39,20 +39,22 @@
             </div>
         </div>
         <div class="selection">
-            <div id="mode-X01" style="display:block;">
-                1
-            </div>
-            <div id="mode-cricket" style="display:none;">
-                2
-            </div>
-            <div id="mode-around-the-clock" style="display:none;">
-                3
-            </div>
-            <div id="mode-g121" style="display:none;">
-                4
-            </div>
-            <div id="mode-freies-spiel" style="display:none;">
-                5
+            <div class="selection-mode">
+                <div id="mode-X01" style="display:block;">
+                    1
+                </div>
+                <div id="mode-cricket" style="display:none;">
+                    2
+                </div>
+                <div id="mode-around-the-clock" style="display:none;">
+                    3
+                </div>
+                <div id="mode-g121" style="display:none;">
+                    4
+                </div>
+                <div id="mode-freies-spiel" style="display:none;">
+                    5
+                </div>
             </div>
         </div>
         <div class="player-selection">
@@ -66,6 +68,11 @@
                 <button class="selection-button" id="add-bot" onclick="fetchJSONData()">
                     Bot hinzufügen
                 </button>
+            </div>
+            <div class="player-input" style="display:block">
+                <label for="player-input">Name eingeben:</label>
+                <input type="text" id="player-input" placeholder="max. 16 Ziffern" maxlength="16">
+                <button class="input-btn">Eingeben</button>
             </div>
             <div class="player-list">
                 <div id="player_1">
