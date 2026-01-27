@@ -24,25 +24,50 @@ function bar(link) {
     window.location.href = link;
 }
 
-function openAddPopup(addPlayer){
+async function add(addPlayer){
 
     if (addPlayer == true){
         alert("addPlayer")
     }
     else{
-        alert("addBot")
+        if ((await fetchJSONData('./test.json')).playerCount <= 8){
+            let nextBot = (await fetchJSONData("saves/games/setUpGame.json")).playerCount + 1
+            console.log(nextBot)
+
+            const aktuellerStand = await fetchJSONData("saves/games/setUpGame.json");
+            aktuellerStand.playerCount += 1; // Wert erhöhen
+
+            await saveJSONData("saves/games/setUpGame.json", aktuellerStand);
+        }
     }
 }
 
-function fetchJSONData() {
-    fetch('./test.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();  
-        })
-        .then(data => console.log(data));
+async function randomBotName(path) {
+    let listLen = (await fetchJSONData(path)).names.length
+    let randomIndex = Math.floor(Math.random() * listLen)
+    return (await fetchJSONData(path)).names[randomIndex]
+}
+
+async function fetchJSONData(path) {
+    const response = await fetch(path);
+    const contents = await response.json();
+    return contents; 
+}
+
+async function saveJSONData(path, data) {
+    const response = await fetch(path, {
+        method: 'PUT', // Oder 'PUT', um die Datei zu aktualisieren
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) // Das Objekt wird wieder zu Text
+    });
+
+    if (!response.ok) {
+        throw new Error('Speichern fehlgeschlagen');
+    }
+
+    return await response.json(); 
 }
 
 
