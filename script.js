@@ -25,6 +25,39 @@ function bar(link) {
     window.location.href = link;
 }
 
+function openAddPopup(addPlayer){
+
+    if (addPlayer == true){
+        alert("addPlayer")
+    }
+    else{
+        alert("addBot")
+    }
+}
+
+function fetchJSONData() {
+    fetch('./test.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();  
+        })
+        .then(data => console.log(data));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /********* X01-page *********/
 function scoreLeft() {
     document.getElementById("score-left1").textContent = "501";
