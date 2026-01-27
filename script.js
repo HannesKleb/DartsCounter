@@ -1,10 +1,9 @@
 /********* main-page *********/
 function showMode(id) {
-    const allModes = document.querySelectorAll('.mode > div');
+    const allModes = document.querySelectorAll('.selection > div');
     allModes.forEach(mode => {
         mode.style.display = 'none';
     });
-
     const selectedMode = document.getElementById(id);
     if (selectedMode) {
         selectedMode.style.display = 'block';
