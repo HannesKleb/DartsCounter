@@ -1,6 +1,6 @@
 /* global */
 body {
-    font-family: Verdana, sans-serif;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     background-color: white;
 }
 .content {
@@ -148,11 +148,15 @@ body {
     justify-content: center;
 }
 .last-score-field {
-    width: vw;
-    height: 1hw;
     background-color: #e5e5e5;
+    border: none;
     border-radius: 6px;
     margin: 0.25vw;
+    font-size: 2vh;
+    padding: 0.5vh;
+}
+.last-score-field button:hover {
+    background-color: lightgray;
 }
 
 /*buttons*/
@@ -180,6 +184,10 @@ body {
     background-color: rgb(0, 205, 0);
     color: white;
 }
+.button-board-system {
+    padding: 1vh 1vw;
+    background-color: #e5e5e5;
+}
 .score-button-numbers button{
     width: 10vw;
     height: 10vh;
@@ -193,9 +201,7 @@ body {
     color: white;
 }
 .score-board {
-    padding: 5vh 5vw;
-    background-color: white;
-    border-radius: 6px;
+   
 }
 .score-board img{
     width: 100%; 
