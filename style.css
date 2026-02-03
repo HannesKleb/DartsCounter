@@ -17,7 +17,7 @@ body {
 .bar {
     padding: 1vh 4vw;
     align-items: center;
-    background-color: grey;
+    background-color: white;
     border-radius: 6px;
     display: flex;
     justify-content: center;
@@ -53,7 +53,7 @@ body {
 .bar button:hover {
     background-color:lightgray;
     color: rgb(0, 205, 0);
-    height: 4.5vh;
+    height: 5;
 }
 /********* main-page *********/
 .selection-btn {

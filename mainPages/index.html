@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <script src="../script.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -15,45 +15,59 @@
         </div>
     </div>
     <div class="content">
-        
-        <div class="mode-selection">
+        <div class="mode-selection" data-group="mode">
             <div class="mode-selection-title"> 
                 <h3>Spielmodus</h3> 
             </div>
             <div class="selection-btn"> 
-                <button class="selection-button" id="X01-btn" onclick="showMode(`mode-X01`)">
+                <button 
+                    class="selection-button" id="X01-btn" 
+                    data-target="mode-X01"
+                    onclick="showMode('mode-X01', 'mode')">
                     X01
                 </button>
-                <button class="selection-button" id="cricket-btn" onclick="showMode(`mode-cricket`)">
+                <button 
+                    class="selection-button" id="cricket-btn" 
+                    data-target="mode-cricket" 
+                    onclick="showMode('mode-cricket', 'mode')">
                     Cricket
                 </button>
-                <button class="selection-button" id="around-the-clock-btn" onclick="showMode(`mode-around-the-clock`)">
+                <button 
+                    class="selection-button" id="around-the-clock-btn" 
+                    data-target="mode-around-the-clock"
+                     onclick="showMode('mode-around-the-clock', 'mode')">
                     Around the Clock
                 </button>
-                <button class="selection-button" id="g121-btn" onclick="showMode(`mode-g121`)">
+                <button 
+                    class="selection-button" id="g121-btn" 
+                    data-target="mode-g121" 
+                    onclick="showMode('mode-g121', 'mode')">
                     121
                 </button>
-                <button class="selection-button" id="freies-spiel-btn" onclick="showMode(`mode-freies-spiel`)">
+                <button 
+                    class="selection-button" id="freies-spiel-btn" 
+                    data-target="mode-freies-spiel" 
+                    onclick="showMode('mode-freies-spiel', 'mode')">
                     Freies Spiel
                 </button>
             </div>
-        </div>
-        <div class="selection">
-            <div class="selection-mode">
-                <div id="mode-X01" style="display:block;">
-                    1
-                </div>
-                <div id="mode-cricket" style="display:none;">
-                    2
-                </div>
-                <div id="mode-around-the-clock" style="display:none;">
-                    3
-                </div>
-                <div id="mode-g121" style="display:none;">
-                    4
-                </div>
-                <div id="mode-freies-spiel" style="display:none;">
-                    5
+            <div class="selection">
+                <div class="selection-mode">
+                    <div id="mode-X01" data-panel style="display:none;">
+                        1
+                    </div>
+                    <div id="mode-cricket" data-panel style="display:none;">
+                        2
+                    </div>
+                    <div id="mode-around-the-clock" data-panel style="display:none;">
+                        3
+                    </div>
+                    <div id="mode-g121" data-panel style="display:none;">
+                        4
+                    </div>
+                    <div id="mode-freies-spiel" data-panel style="display:none;">
+                        5
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,11 +116,11 @@
         </div>
     </div>
     <div class="bar">
-        <button class="bar-btn-active" id="main" onclick="bar(`index.html`)">Hauptseite</button>
-        <button class="bar-btn" id="player" onclick="bar(`player.html`)">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
-        <button class="bar-btn" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
-        <button class="bar-btn" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
+        <button class="bar-btn-active" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
     </div>
 </body>
 </html>

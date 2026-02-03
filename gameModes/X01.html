@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <script src="../script.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -255,17 +255,17 @@
                 </div>
             </div>
         </div>
-        <div class="button-board-system">
+        <div class="button-board-system" data-group="board">
             <div class="selection-btn">
-                <button class="selection-button" onclick="showMode(`score-button-id`)">
+                <button class="selection-button" data-target="score-button-id" onclick="showMode('score-button-id', 'board')">
                         Tastatur
                     </button>
-                    <button class="selection-button" onclick="showMode(`score-board-id`)">
+                    <button class="selection-button" data-target="score-board-id" onclick="showMode('score-board-id', 'board')">
                         Scheibe
                     </button>
             </div>
             <div class="selection" id="selection-score-system">
-                <div class="score-button" id="score-button-id" style="display:block;">
+                <div class="score-button" id="score-button-id" data-panel style="display:block;">
                     <table>
                         <tbody>
                             <tr>
@@ -304,8 +304,8 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="score-board" id="score-board-id" style="display:none;">
-                    <img src="resources/dartboard.svg">
+                <div class="score-board" id="score-board-id" data-panel style="display:none;">
+                    <img src="../resources/dartboard.svg">
                 </div>
             </div>
         </div>
