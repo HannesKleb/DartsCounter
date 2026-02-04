@@ -208,6 +208,9 @@ body {
     max-width: 50vh; 
     height: auto;
 }
+.active {
+    background-color: lightgray;
+}
 
 /********* X01-page *********/
 .stats {
