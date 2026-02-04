@@ -129,6 +129,17 @@ body {
     background-color: white;
 }
 
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #222;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    color: white;
+}
+
+
 /********* stats-page *********/
 
 
