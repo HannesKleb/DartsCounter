@@ -1,5 +1,6 @@
 package com.DartsCounter.DartsCounter_backend;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class ServiceController {
         arrowDetection.setRunning(bool);
         if(bool){
             arrowDetection.BackgroundSubtractor(0);
+            arrowDetection.BackgroundSubtractor(2);
+            arrowDetection.BackgroundSubtractor(4);
         }
         return bool;
     }
@@ -41,7 +44,7 @@ public class ServiceController {
     private ScoreCommunication scoreCommunication;
 */
     @PostMapping("/scooring/coords/{playerId}/{dart}/{angle}/{radius}")
-    public String recieveCoords(@PathVariable("playerId") int playerId, @PathVariable("dart") int dart, @PathVariable("angle") float angle, @PathVariable("radius") float radius){
+    public String recieveCoords(@PathVariable("playerId") int playerId, @PathVariable("dart") int dart, @PathVariable("angle") BigDecimal angle, @PathVariable("radius") BigDecimal radius){
         return "player: " + playerId + " - Dart: " + dart + " - angle: " + angle + " - radius: " + radius;
     }
 
