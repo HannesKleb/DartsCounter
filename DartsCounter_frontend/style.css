@@ -60,7 +60,8 @@ body {
     display: flex;
     justify-content: center;
 }
-.selection-button {
+.selection-button { 
+    color: black;
     margin-right: 10px;
 }
 #freies-spiel-btn {
@@ -102,7 +103,8 @@ body {
 }
 
 /*button*/
-.selection-btn button {
+.selection-btn button { 
+    color: black;
     padding: 1vh 7vw;
     color: black;
     background-color: white;
@@ -129,16 +131,27 @@ body {
     background-color: white;
 }
 
+.player-list {
+    margin-top: 5vh;
+}
 .player-item {
     display: flex;
     justify-content: space-between;
     padding: 8px 12px;
-    background: #222;
+    background: white;
     border-radius: 6px;
     margin-bottom: 6px;
-    color: white;
+    color: black;
 }
-
+/*.player-index {
+    font-size: 1vw;
+}*/
+.player-item button { 
+    color: black;
+    background-color: #e5e5e5;
+    border: none;
+    border-radius: 6px;
+}
 
 /********* stats-page *********/
 
@@ -171,7 +184,8 @@ body {
 }
 
 /*buttons*/
-.back-btn button {
+.back-btn button { 
+    color: black;
     font-size: 2vh;
     padding: 0.5vh 0.5vw;
     color: rgb(0, 205, 0);
@@ -180,7 +194,8 @@ body {
     border: none;
 }
 
-.score-button button {
+.score-button button { 
+    color: black;
     font-size: 3vh; 
     color: rgb(0, 205, 0);
     background-color: white;
@@ -203,7 +218,8 @@ body {
     width: 10vw;
     height: 10vh;
 }
-.score-button-extra button {
+.score-button-extra button { 
+    color: black;
     height: 10vh;
     width: 20.2vw;
 }
@@ -249,7 +265,8 @@ body {
     font-size: 2vh;
 }
 
-.score-button {
+.score-button { 
+    color: black;
     background-color: #e5e5e5;
 }
 .button-board-system {

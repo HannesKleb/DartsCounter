@@ -1,3 +1,4 @@
+
 async function getGame() {
     const url = "../saves/games/game.json";
     try {
@@ -413,5 +414,3 @@ document.addEventListener("DOMContentLoaded", () => {
 /********* 121-page *********/
 
 /********* freiesSpiel-page *********/
-
-
