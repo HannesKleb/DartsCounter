@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/sevices")
+@RequestMapping("/services")
 public class ServiceController {
     @Autowired
     private CameraScanner cameraScanner;
@@ -36,4 +36,13 @@ public class ServiceController {
     public String postTest(@PathVariable("id") String id){
         return id;
     }
+/* 
+    @Autowired
+    private ScoreCommunication scoreCommunication;
+*/
+    @PostMapping("/scooring/coords/{playerId}/{dart}/{angle}/{radius}")
+    public String recieveCoords(@PathVariable("playerId") int playerId, @PathVariable("dart") int dart, @PathVariable("angle") float angle, @PathVariable("radius") float radius){
+        return "player: " + playerId + " - Dart: " + dart + " - angle: " + angle + " - radius: " + radius;
+    }
+
 }
