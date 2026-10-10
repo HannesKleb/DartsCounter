@@ -22,9 +22,12 @@
         U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/********* Design: ruhig wie apple.com *********/
-/* Eine Grau-Familie (Zinc), ein Akzent (Smaragdgrün, angelehnt an das Grün der Scheibe).
-   Kein reines Schwarz/Weiß, keine Leucht-Effekte.
+/********* Design: ruhiges Glas *********/
+/* Milchglas-Karten auf hellem bzw. dunklem Grund (je nach Systemeinstellung).
+   Dahinter nur zwei sehr schwache, feste Lichtflächen (neutral + Hauch Grün), keine bunten Farben.
+   Glas-Kante: 1px Rand + feine Lichtkante oben (inset). Ohne Blur-Unterstützung oder bei
+   "Transparenz reduzieren" werden die Karten deckend.
+   Eine Grau-Familie (Zinc), ein Akzent (Smaragdgrün, angelehnt an das Grün der Scheibe).
    Ecken-Regel: Karten 16px, Eingabefelder und Tasten der Zahlen-Tastatur 10px, alle anderen Buttons rund (Pill). */
 :root {
     color-scheme: light;
@@ -33,16 +36,20 @@
     --accent-soft: rgba(52, 211, 153, 0.16);
     --danger: #be123c;
     --page-bg: #f4f4f5;
+    --page-light: radial-gradient(60vmax 60vmax at 8% 0%, rgba(52, 211, 153, 0.12), transparent 70%),
+        radial-gradient(70vmax 70vmax at 100% 100%, rgba(24, 24, 27, 0.07), transparent 70%);
     --text: #18181b;
     --muted: #52525b;
-    --glass: #fafafa;             /* Karten */
-    --glass-strong: #e4e4e7;      /* Buttons auf Karten */
-    --glass-input: #f4f4f5;
+    --glass: rgba(250, 250, 250, 0.6);
+    --glass-solid: #fafafa;
+    --glass-strong: rgba(228, 228, 231, 0.7);
+    --glass-input: rgba(244, 244, 245, 0.75);
     --glass-border: rgba(24, 24, 27, 0.08);
-    --glass-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 4px 14px rgba(24, 24, 27, 0.05);
-    --row-alt: #f4f4f5;
-    --frosted: rgba(250, 250, 250, 0.75);
-    --blur: blur(20px) saturate(180%);
+    --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.9);
+    --glass-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 8px 24px rgba(24, 24, 27, 0.06);
+    --row-alt: rgba(24, 24, 27, 0.03);
+    --frosted: rgba(250, 250, 250, 0.6);
+    --blur: blur(18px) saturate(160%);
     --radius: 16px;
     --radius-small: 10px;
     --pill: 999px;
@@ -54,20 +61,38 @@
         --accent-soft: rgba(52, 211, 153, 0.14);
         --danger: #fb7185;
         --page-bg: #09090b;
+        --page-light: radial-gradient(60vmax 60vmax at 8% 0%, rgba(52, 211, 153, 0.09), transparent 70%),
+            radial-gradient(70vmax 70vmax at 100% 100%, rgba(250, 250, 250, 0.05), transparent 70%);
         --text: #fafafa;
         --muted: #a1a1aa;
-        --glass: #18181b;
-        --glass-strong: #27272a;
-        --glass-input: #27272a;
-        --glass-border: rgba(250, 250, 250, 0.08);
-        --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
-        --row-alt: #1f1f23;
-        --frosted: rgba(24, 24, 27, 0.75);
+        --glass: rgba(39, 39, 42, 0.45);
+        --glass-solid: #18181b;
+        --glass-strong: rgba(63, 63, 70, 0.55);
+        --glass-input: rgba(39, 39, 42, 0.6);
+        --glass-border: rgba(250, 250, 250, 0.1);
+        --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.07);
+        --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+        --row-alt: rgba(250, 250, 250, 0.03);
+        --frosted: rgba(24, 24, 27, 0.6);
+    }
+}
+/* deckend, wenn kein Blur möglich ist oder "Transparenz reduzieren" eingestellt ist */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root {
+        --glass: var(--glass-solid);
+        --frosted: var(--glass-solid);
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    :root {
+        --glass: var(--glass-solid);
+        --frosted: var(--glass-solid);
     }
 }
 html {
     min-height: 100%;
-    background: var(--page-bg);
+    background: var(--page-light), var(--page-bg);
+    background-attachment: fixed;
 }
 
 body {
@@ -133,7 +158,7 @@ option {
     color: black; /* Auswahllisten werden vom System gezeichnet */
 }
 
-/* Karten */
+/* Glas-Karten */
 .scoring-stats,
 .selection-mode,
 .player-item,
@@ -143,23 +168,16 @@ option {
 .stats-table,
 .cricket-table,
 .result-box,
-.offline-banner {
+.offline-banner,
+.bar {
     background: var(--glass);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-}
-/* Milchglas nur für schwebende Elemente (wie die Navigationsleiste bei Apple) */
-.bar {
-    background: var(--frosted);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
     -webkit-backdrop-filter: var(--blur);
     backdrop-filter: var(--blur);
 }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .bar {
-        background: var(--glass);
-    }
+.bar {
+    background: var(--frosted);
 }
 
 .content {
@@ -582,7 +600,7 @@ option {
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
 }
 .score-button-numbers button {
     width: 10vw;
