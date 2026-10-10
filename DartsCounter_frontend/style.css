@@ -1,25 +1,44 @@
-/* global */
+/********* Design: Glassmorphism *********/
+/* Milchglas-Karten auf einem dunklen Farbverlauf. Weiße Schrift für guten Kontrast aus Entfernung. */
 :root {
-    --green: rgb(0, 205, 0);
-    --green-dark: rgb(0, 150, 0);
-    --bg: #e5e5e5;
-    --card: white;
-    --text: black;
-    --muted: #666;
-    --danger: #d22;
+    --accent: #3ef0a6;            /* Mint-Grün, angelehnt an das Grün der Scheibe */
+    --accent-text: #06261a;
+    --danger: #ff5d7a;
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.72);
+    --glass: rgba(255, 255, 255, 0.12);
+    --glass-strong: rgba(255, 255, 255, 0.2);
+    --glass-input: rgba(0, 0, 0, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.28);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    --blur: blur(14px) saturate(140%);
+    --radius: 18px;
+    --radius-small: 12px;
+}
+html {
+    min-height: 100%;
+    background-color: #120c33;
+    background-image:
+        radial-gradient(circle at 12% 18%, rgba(140, 92, 255, 0.85) 0, transparent 38%),
+        radial-gradient(circle at 88% 12%, rgba(0, 194, 255, 0.7) 0, transparent 36%),
+        radial-gradient(circle at 75% 88%, rgba(255, 77, 141, 0.55) 0, transparent 40%),
+        radial-gradient(circle at 20% 90%, rgba(0, 220, 170, 0.45) 0, transparent 35%),
+        linear-gradient(135deg, #1b1240 0%, #0b2a5b 55%, #06404f 100%);
+    background-attachment: fixed;
 }
 body {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background-color: white;
     color: var(--text);
-    margin: 8px;
-    padding-bottom: 80px; /* Platz für die Navigationsleiste */
+    margin: 12px;
+    padding-bottom: 90px; /* Platz für die Navigationsleiste */
 }
 h1 {
     margin: 0.3em 0;
+    letter-spacing: 0.02em;
 }
 h2 {
     margin: 0.2em 0 0.5em;
+    font-weight: 600;
 }
 h3 {
     margin: 0.5em 0;
@@ -29,23 +48,66 @@ h3 {
 }
 button {
     font: inherit;
+    color: var(--text);
     cursor: pointer;
+    transition: background-color 0.15s, transform 0.08s, box-shadow 0.15s;
+}
+button:active:not(:disabled) {
+    transform: scale(0.97);
 }
 button:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: default;
 }
 input, select {
     font: inherit;
-    padding: 4px 6px;
-    border: none;
-    border-radius: 6px;
-    background: white;
+    color: var(--text);
+    padding: 6px 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
+    background: var(--glass-input);
 }
+input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+input:focus, select:focus, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+option {
+    color: black; /* Auswahllisten werden vom System gezeichnet */
+}
+
+/* Glas-Fläche, wird von vielen Elementen genutzt */
+.content,
+.bar,
+.scoring-stats,
+.selection-mode,
+.player-item,
+.running-game,
+.settings-section,
+.game-card,
+.stats-table,
+.cricket-table,
+.result-box,
+.offline-banner {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: var(--blur);
+    backdrop-filter: var(--blur);
+}
+/* Fallback für Browser/Geräte ohne Blur: etwas deckender, damit es lesbar bleibt */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .content, .bar, .scoring-stats, .selection-mode, .player-item, .running-game,
+    .settings-section, .game-card, .stats-table, .cricket-table, .result-box, .offline-banner {
+        background: rgba(30, 24, 70, 0.82);
+    }
+}
+
 .content {
     padding: 2vh 2vw;
-    background-color: var(--bg);
-    border-radius: 6px;
+    border-radius: var(--radius);
 }
 .selection {
     margin: 0.5vh auto;
@@ -61,21 +123,24 @@ input, select {
 }
 .badge {
     font-size: 0.5em;
-    background: var(--bg);
-    border-radius: 6px;
-    padding: 2px 6px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    padding: 2px 8px;
     margin-left: 6px;
     vertical-align: middle;
 }
 .primary-btn {
-    background-color: var(--green) !important;
-    color: white !important;
+    background: var(--accent) !important;
+    color: var(--accent-text) !important;
+    font-weight: 600;
+    box-shadow: 0 0 18px rgba(62, 240, 166, 0.45);
 }
 .danger-btn {
-    background: white;
+    background: rgba(255, 93, 122, 0.12);
     color: var(--danger);
     border: 1px solid var(--danger);
-    border-radius: 6px;
+    border-radius: var(--radius-small);
     padding: 6px 12px;
 }
 .danger-btn:hover {
@@ -83,64 +148,63 @@ input, select {
     color: white;
 }
 .offline-banner {
-    background: #fff3cd;
-    color: #664d03;
-    padding: 6px 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
+    background: rgba(255, 196, 0, 0.18);
+    border-color: rgba(255, 196, 0, 0.6);
+    padding: 8px 14px;
+    border-radius: var(--radius-small);
+    margin-bottom: 10px;
     text-align: center;
 }
 .checkbox {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+}
+.checkbox input {
+    accent-color: var(--accent);
+    width: 18px;
+    height: 18px;
 }
 
-/********* main-pages-global *********/
+/********* Navigationsleiste *********/
 .bar {
-    padding: 1vh 4vw;
+    padding: 8px;
+    gap: 6px;
     align-items: center;
-    background-color: white;
-    border-radius: 6px;
+    border-radius: var(--radius);
     display: flex;
     justify-content: center;
     position: fixed;
     bottom: 10px;
-    left: 0;
-    right: 0;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+}
+.bar-btn, .bar-btn-active {
+    width: 18vw;
+    min-height: 40px;
+    border: none;
+    border-radius: var(--radius-small);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .bar-btn {
-    color: var(--green);
-    background-color: white;
-    width: 15vw;
-    height: 4vh;
-    min-height: 32px;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
-    border-radius: 6px;
+    color: var(--muted);
+    background: transparent;
+}
+.bar-btn:hover {
+    background: var(--glass-strong);
+    color: var(--text);
 }
 .bar-btn-active {
-    color: white;
-    background-color: var(--green);
-    width: 20vw;
-    height: 5vh;
-    min-height: 36px;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
-    border-radius: 6px;
-}
-.bar button:hover {
-    background-color: lightgray;
-    color: var(--green);
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+    box-shadow: 0 0 18px rgba(62, 240, 166, 0.4);
 }
 
-/********* main-page *********/
+/********* Tabs und Buttons *********/
 .selection-btn {
     display: flex;
     justify-content: center;
@@ -148,32 +212,36 @@ input, select {
     gap: 8px;
 }
 .selection-btn button {
-    padding: 1vh 4vw;
-    color: black;
-    background-color: white;
-    border: none;
-    border-radius: 6px;
+    padding: 1vh 3.5vw;
+    min-height: 40px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
 }
 .selection-btn button:hover {
-    background-color: lightgray;
+    background: var(--glass-strong);
 }
 .selection-btn button.active {
-    background-color: var(--green);
-    color: white;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
 }
+
+/********* Hauptseite *********/
 .selection-mode {
-    background-color: white;
     width: 90vw;
-    border-radius: 6px;
+    border-radius: var(--radius);
     display: flex;
     justify-content: center;
+    margin-top: 10px;
 }
 .mode-options {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 12px 24px;
-    padding: 12px;
+    padding: 14px;
     align-items: flex-end;
 }
 .mode-options label {
@@ -183,9 +251,6 @@ input, select {
 }
 .mode-options .checkbox {
     flex-direction: row;
-}
-.mode-options input, .mode-options select {
-    background: var(--bg);
 }
 .mode-help {
     width: 100%;
@@ -197,10 +262,9 @@ input, select {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    background: white;
-    border-left: 6px solid var(--green);
-    border-radius: 6px;
-    padding: 10px 14px;
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px 16px;
     margin-bottom: 12px;
 }
 .running-game-buttons {
@@ -208,10 +272,10 @@ input, select {
     gap: 8px;
 }
 .running-game-buttons button {
-    border: none;
-    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
     padding: 8px 14px;
-    background: var(--bg);
+    background: var(--glass-strong);
 }
 .player-input {
     margin-top: 1vh;
@@ -221,13 +285,13 @@ input, select {
     gap: 8px;
 }
 .input-btn {
-    padding: 4px 12px;
-    background-color: white;
-    border: none;
-    border-radius: 6px;
+    padding: 6px 14px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
 }
 .input-btn:hover {
-    background-color: lightgray;
+    background: rgba(255, 255, 255, 0.3);
 }
 #player-input, #new-player {
     width: 12em;
@@ -235,18 +299,21 @@ input, select {
 .start {
     display: flex;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 14px;
 }
 .start button {
-    padding: 2vh 7vw;
-    background-color: var(--green);
-    color: white;
+    padding: 1.6vh 9vw;
+    min-height: 48px;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 700;
+    font-size: 1.1em;
     border: none;
-    border-radius: 6px;
+    border-radius: 999px;
+    box-shadow: 0 0 24px rgba(62, 240, 166, 0.5);
 }
-.start button:hover {
-    color: var(--green);
-    background-color: white;
+.start button:hover:not(:disabled) {
+    box-shadow: 0 0 34px rgba(62, 240, 166, 0.75);
 }
 .player-list {
     margin-top: 2vh;
@@ -255,30 +322,31 @@ input, select {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 12px;
-    background: white;
-    border-radius: 6px;
-    margin-bottom: 6px;
+    padding: 10px 14px;
+    border-radius: var(--radius-small);
+    margin-bottom: 8px;
 }
 .player-item .player-name {
     flex: 1;
+}
+.player-index {
+    color: var(--muted);
 }
 .player-actions {
     display: flex;
     gap: 6px;
 }
 .player-item button {
-    color: black;
-    background-color: var(--bg);
-    border: none;
-    border-radius: 6px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
     padding: 4px 10px;
 }
 
-/********* stats-page / all-games-page *********/
+/********* Statistiken / Alle Spiele *********/
 .filter {
     justify-content: flex-end;
-    margin: 8px 0;
+    margin: 10px 0;
 }
 .list-panel {
     margin-top: 12px;
@@ -287,30 +355,30 @@ input, select {
     overflow-x: auto;
 }
 .stats-table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: 100%;
-    background: white;
-    border-radius: 6px;
+    border-radius: var(--radius-small);
+    overflow: hidden;
 }
 .stats-table th, .stats-table td {
-    padding: 6px 10px;
+    padding: 8px 12px;
     text-align: right;
     white-space: nowrap;
 }
 .stats-table thead th {
-    background: var(--green);
-    color: white;
+    background: rgba(62, 240, 166, 0.22);
+    font-weight: 600;
 }
 .stats-table tbody th {
     text-align: left;
 }
 .stats-table tbody tr:nth-child(even) {
-    background: #f5f5f5;
+    background: rgba(255, 255, 255, 0.06);
 }
 .game-card {
-    background: white;
-    border-radius: 6px;
-    margin-bottom: 6px;
+    border-radius: var(--radius-small);
+    margin-bottom: 8px;
 }
 .game-card-head {
     width: 100%;
@@ -318,13 +386,13 @@ input, select {
     flex-wrap: wrap;
     gap: 6px 16px;
     justify-content: space-between;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border: none;
     background: none;
     text-align: left;
 }
 .game-details {
-    padding: 0 12px 12px;
+    padding: 0 14px 14px;
 }
 .result-item {
     display: flex;
@@ -332,12 +400,14 @@ input, select {
     gap: 4px 12px;
     padding: 4px 0;
 }
+.result-item span {
+    color: var(--muted);
+}
 
-/********* settings-page *********/
+/********* Einstellungen *********/
 .settings-section {
-    background: white;
-    border-radius: 6px;
-    padding: 8px 14px 14px;
+    border-radius: var(--radius);
+    padding: 8px 16px 16px;
     margin-bottom: 12px;
     display: flex;
     flex-direction: column;
@@ -348,12 +418,6 @@ input, select {
     flex-direction: column;
     gap: 4px;
     max-width: 24em;
-}
-.settings-section input, .settings-section select {
-    background: var(--bg);
-}
-.settings-section .input-btn {
-    background: var(--bg);
 }
 .settings-row {
     display: flex;
@@ -366,7 +430,7 @@ input, select {
     cursor: pointer;
 }
 
-/********* game-pages-global *********/
+/********* Spielseiten *********/
 .game-options {
     color: var(--muted);
 }
@@ -378,117 +442,129 @@ input, select {
     flex-wrap: wrap;
 }
 .game-info {
-    font-weight: bold;
+    font-weight: 600;
 }
 .back-btn button {
-    font-size: 2vh;
-    padding: 0.5vh 1vw;
-    color: var(--green);
-    background-color: white;
-    border-radius: 6px;
-    border: none;
+    padding: 6px 14px;
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
 }
 .back-btn button:hover {
-    background-color: var(--green);
-    color: white;
-}
-.last-score {
-    display: flex;
-    justify-content: center;
-}
-.last-score-field {
-    background-color: var(--bg);
-    border-radius: 6px;
-    margin: 0.25vw;
-    font-size: 2vh;
-    padding: 0.5vh;
-    min-width: 3em;
-}
-.button-board-system {
-    padding: 1vh 1vw;
-    background-color: var(--bg);
-}
-.score-button {
-    background-color: var(--bg);
-}
-.score-button table {
-    margin: 0 auto;
-}
-.score-button button {
-    font-size: 3vh;
-    color: var(--green);
-    background-color: white;
-    border: none;
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.score-button-numbers button {
-    width: 10vw;
-    height: 8vh;
-}
-.score-button-extra button {
-    color: black;
-    height: 8vh;
-    width: 20.2vw;
-}
-.score-button button:hover, .score-button button.active {
-    background-color: var(--green);
-    color: white;
-}
-.score-board {
-    text-align: center;
-}
-.score-board img {
-    width: 100%;
-    max-width: 50vh;
-    height: auto;
+    background: rgba(255, 255, 255, 0.3);
 }
 .stats {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    margin: 1vh 0;
 }
 .scoring-stats {
-    background-color: white;
-    border-radius: 6px;
+    border-radius: var(--radius);
     margin: 1vh;
     padding: 2vh 3vw;
     text-align: center;
-    border: 3px solid transparent;
     min-width: 12em;
+    transition: box-shadow 0.2s, border-color 0.2s;
 }
 .scoring-stats.current {
-    border-color: var(--green);
+    border: 2px solid var(--accent);
+    box-shadow: var(--glass-shadow), 0 0 28px rgba(62, 240, 166, 0.45);
+    background: rgba(255, 255, 255, 0.18);
 }
 .big-scoring-stats {
     font-size: 3vh;
     margin-bottom: 1vh;
 }
 .score-left {
-    font-size: 7vh;
+    font-size: 8vh;
+    font-weight: 700;
+    line-height: 1.1;
     margin-top: 1vh;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 .score-label {
     font-size: 0.5em;
     color: var(--muted);
     margin-bottom: 0.5vh;
 }
+.last-score {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5vh;
+}
+.last-score-field {
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
+    margin: 0.25vw;
+    font-size: 2vh;
+    padding: 0.5vh;
+    min-width: 3em;
+}
 .small-scoring-stats {
     font-size: 2vh;
     color: var(--muted);
+}
+.button-board-system {
+    padding: 1vh 1vw;
+}
+.score-button table {
+    margin: 1vh auto 0;
+    border-spacing: 6px;
+}
+.score-button button {
+    font-size: 3vh;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-backdrop-filter: var(--blur);
+    backdrop-filter: var(--blur);
+}
+.score-button-numbers button {
+    width: 10vw;
+    height: 8vh;
+}
+.score-button-extra button {
+    height: 8vh;
+    width: 20.4vw;
+}
+.score-button button:hover {
+    background: var(--glass-strong);
+}
+.score-button button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+}
+.score-board {
+    text-align: center;
+    margin-top: 1vh;
+}
+.score-board img {
+    width: 100%;
+    max-width: 50vh;
+    height: auto;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.45));
 }
 .toast {
     position: fixed;
     top: 30%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: var(--blur);
+    backdrop-filter: var(--blur);
     font-size: 5vh;
+    font-weight: 700;
     padding: 1vh 4vw;
-    border-radius: 10px;
+    border-radius: var(--radius);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
@@ -500,19 +576,18 @@ input, select {
 .result-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(10, 8, 30, 0.45);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 30;
 }
-.result-overlay[hidden] {
-    display: none;
-}
 .result-box {
-    background: white;
-    border-radius: 10px;
-    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius);
+    padding: 22px 26px;
     max-width: 90vw;
     max-height: 85vh;
     overflow-y: auto;
@@ -524,32 +599,28 @@ input, select {
     margin-top: 16px;
     justify-content: flex-end;
 }
-.result-buttons button {
-    border: none;
-    border-radius: 6px;
+.result-buttons button, .empty-state button {
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-small);
     padding: 10px 16px;
-    background: var(--bg);
+    background: var(--glass-strong);
 }
 .empty-state {
     text-align: center;
     padding: 4vh 0;
 }
-.empty-state button {
-    border: none;
-    border-radius: 6px;
-    padding: 10px 16px;
-}
 
-/********* cricket-page *********/
+/********* Cricket *********/
 #cricket-board {
     display: flex;
     justify-content: center;
     margin: 1vh 0;
 }
 .cricket-table {
-    border-collapse: collapse;
-    background: white;
-    border-radius: 6px;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
     font-size: 2.5vh;
 }
 .cricket-table th, .cricket-table td {
@@ -557,23 +628,28 @@ input, select {
     text-align: center;
 }
 .cricket-table td.current {
-    background: #eaffea;
+    background: rgba(62, 240, 166, 0.18);
 }
 .cricket-table tr.closed {
-    color: #bbb;
+    color: rgba(255, 255, 255, 0.35);
     text-decoration: line-through;
 }
 
 /********* kleine Bildschirme (Handy) *********/
 @media (max-width: 600px) {
+    body {
+        margin: 8px;
+    }
     .bar {
         padding: 6px;
-        bottom: 0;
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        gap: 4px;
     }
     .bar-btn, .bar-btn-active {
         width: auto;
         flex: 1;
-        margin-right: 4px;
         font-size: 12px;
         padding: 0 2px;
     }
@@ -587,8 +663,18 @@ input, select {
     .score-button-extra button {
         width: 25vw;
     }
+    .score-button table {
+        border-spacing: 3px;
+    }
     .running-game {
         flex-direction: column;
         align-items: flex-start;
+    }
+}
+
+/* weniger Bewegung, falls im System eingestellt */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
     }
 }

@@ -52,6 +52,11 @@ function markOffline(offline) {
     }
 }
 
+// Beim Seitenwechsel bricht der Browser laufende Anfragen ab – das heißt nicht, dass das Backend weg ist
+let pageUnloading = false;
+window.addEventListener("pagehide", () => { pageUnloading = true; });
+window.addEventListener("pageshow", () => { pageUnloading = false; });
+
 // fetch mit Zeitlimit; nach einem Fehlschlag wird das Backend eine Weile übersprungen
 async function backendFetch(path, options = {}, { force = false } = {}) {
     if (!force && (backendDisabled() || isMarkedOffline())) {
@@ -64,7 +69,7 @@ async function backendFetch(path, options = {}, { force = false } = {}) {
         markOffline(false);
         return response;
     } catch (error) {
-        markOffline(true);
+        if (!pageUnloading) markOffline(true);
         throw error;
     } finally {
         clearTimeout(timer);
