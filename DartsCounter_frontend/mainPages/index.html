@@ -85,8 +85,8 @@
             </div>
             <div class="player-input" style="display:block">
                 <label for="player-input">Name eingeben:</label>
-                <input type="text" id="player-input" placeholder="max. 16 Ziffern" maxlength="16">
-                <button class="input-btn">Eingeben</button>
+                <input type="text" id="player-input" placeholder="max. 16 Zeichen" maxlength="16" onkeydown="if (event.key === 'Enter') add(true)">
+                <button class="input-btn" onclick="add(true)">Eingeben</button>
             </div>
             <div class="player-list">
                 

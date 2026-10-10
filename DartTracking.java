@@ -128,7 +128,8 @@ class Geometry {
             double rad = Math.toRadians(angle);
             double x = radiusCm * Math.sin(rad);
             double y = -radiusCm * Math.cos(rad);
-            cameras.add(new Camera(new Point(x, y), angle, focalLengthPx));
+            // Blickrichtung zeigt zur Scheibenmitte: (-sin a, cos a) entspricht Winkel -a
+            cameras.add(new Camera(new Point(x, y), -angle, focalLengthPx));
         }
         return cameras;
     }

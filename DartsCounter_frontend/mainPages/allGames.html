@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../script.js"></script>
+    <script src="../script.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -14,37 +14,37 @@
             <h2>Alle Spiele</h2>
         </div>
     </div>
-    <div class="content">
+    <div class="content" data-group="games">
         <div class="selection-btn"> 
-            <button class="selection-button" id="X01-btn" onclick="showMode(`X01-games`)">
+            <button class="selection-button" id="X01-btn" data-target="X01-games" onclick="showMode('X01-games', 'games')">
                 X01
             </button>
-            <button class="selection-button" id="cricket-btn" onclick="showMode(`cricket-games`)">
+            <button class="selection-button" id="cricket-btn" data-target="cricket-games" onclick="showMode('cricket-games', 'games')">
                 Cricket
             </button>
-            <button class="selection-button" id="around-the-clock-btn" onclick="showMode(`around-the-clock-games`)">
+            <button class="selection-button" id="around-the-clock-btn" data-target="around-the-clock-games" onclick="showMode('around-the-clock-games', 'games')">
                 Around the Clock
             </button>
-            <button class="selection-button" id="g121-btn" onclick="showMode(`g121-games`)">
+            <button class="selection-button" id="g121-btn" data-target="g121-games" onclick="showMode('g121-games', 'games')">
                 121
             </button>
-            <button class="selection-button" id="freies-spiel-btn" onclick="showMode(`freies-spiel-games`)">
+            <button class="selection-button" id="freies-spiel-btn" data-target="freies-spiel-games" onclick="showMode('freies-spiel-games', 'games')">
                 Freies Spiel
             </button>
         </div>
-        <div id="X01-games">
+        <div id="X01-games" data-panel style="display:none;">
 
         </div>
-        <div id="cricket-games">
+        <div id="cricket-games" data-panel style="display:none;">
             
         </div>
-        <div id="around-the-clock-games">
+        <div id="around-the-clock-games" data-panel style="display:none;">
             
         </div>
-        <div id="g121-games">
+        <div id="g121-games" data-panel style="display:none;">
             
         </div>
-        <div id="freies-spiel-games">
+        <div id="freies-spiel-games" data-panel style="display:none;">
             
         </div>
     </div>

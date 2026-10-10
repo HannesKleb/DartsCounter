@@ -1,5 +1,6 @@
 package com.DartsCounter.DartsCounter_backend;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Comparator;
@@ -43,6 +44,10 @@ public class ArrowDetection {
             return;
         }
 
+        // Zielordner für die Masken anlegen, sonst schreibt imwrite nichts
+        new File("subFrames/arrow").mkdirs();
+        new File("subFrames/empty").mkdirs();
+
         Mat frame = new Mat();
         Mat fgMask = new Mat();
         Mat fgMaskBlur = new Mat();
@@ -54,7 +59,6 @@ public class ArrowDetection {
 
         while(this.isRunning && camera.read(frame)){
             backSub.apply(frame, fgMask);
-            System.out.println("Frame: " + frameCount);
             if (frameCount % 2 == 0){
                 // enhance IMG
                 Imgproc.blur(fgMask, fgMaskBlur, new Size(7,7));
@@ -92,7 +96,9 @@ public class ArrowDetection {
 
             double width = rotatedRect.size.width;
             double height = rotatedRect.size.height;
-            double ratio = Math.max(width, height) / Math.min(height, width);
+            double minSide = Math.min(height, width);
+            if (minSide <= 0) continue; // Division durch 0 vermeiden
+            double ratio = Math.max(width, height) / minSide;
             double area = Imgproc.contourArea(contour);
 
             if (area > recordArea){
@@ -111,17 +117,22 @@ public class ArrowDetection {
             }
         }
 
+        if (!dartFound || recordVertices[0] == null){
+            return null;
+        }
+
         Arrays.sort(recordVertices, Comparator.comparingDouble(p -> p.y));
-        double avgX = (recordVertices[0].x + recordVertices[1].x) / 2 - 910;
+        // Abstand zur Bildmitte in Pixeln
+        double avgX = (recordVertices[0].x + recordVertices[1].x) / 2 - image.cols() / 2.0;
 
         System.out.println("Area: " + recordArea);
         System.out.println("ratio: " + recordAreaRatio);
-        if (dartFound){
-            System.out.println("----------PosX: " + avgX);
-            return avgX;
-        }else{
-            return null;
-        }
+        System.out.println("----------PosX: " + avgX);
+        return avgX;
+    }
+
+    public boolean isRunning(){
+        return this.isRunning;
     }
 
     public void setRunning(boolean isRunning){

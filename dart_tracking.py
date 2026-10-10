@@ -118,7 +118,8 @@ def create_cameras_around_board(radius_cm: float, fov_deg: float, image_width_px
         rad = math.radians(angle)
         x = radius_cm * math.sin(rad)
         y = -radius_cm * math.cos(rad)  # y negativ = vorne zur Scheibe
-        cameras.append(Camera(position=Point(x, y), angle_deg=angle, focal_length_px=focal_length_px))
+        # Blickrichtung zeigt zur Scheibenmitte: (-sin a, cos a) entspricht Winkel -a
+        cameras.append(Camera(position=Point(x, y), angle_deg=-angle, focal_length_px=focal_length_px))
     return cameras
 
 # =========================

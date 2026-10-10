@@ -45,43 +45,102 @@ function showMode(id, group) {
   if (activeBtn) activeBtn.classList.add('active');
 }
 
-async function getPlayersFromGame() {
-    const game = await getGame();
-    if (!game) return [];
+const MAX_PLAYERS = 8;
 
-    return Object.keys(game); 
+// Spielerliste wird im Browser gespeichert, bis das Backend Speichern kann
+function loadPlayers() {
+    try {
+        return JSON.parse(localStorage.getItem("players")) ?? [];
+    } catch {
+        return [];
+    }
 }
-async function buildPlayerList() {
+
+function savePlayers(players) {
+    try {
+        localStorage.setItem("players", JSON.stringify(players));
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+function buildPlayerList() {
     const playerListEl = document.querySelector(".player-list");
     if (!playerListEl) return;
 
     playerListEl.innerHTML = ""; // reset
 
-    const players = await getPlayersFromGame();
-
-    players.forEach((playerName, index) => {
+    loadPlayers().forEach((playerName, index) => {
         const playerDiv = document.createElement("div");
         playerDiv.classList.add("player-item");
 
-        playerDiv.innerHTML = `
-            <span class="player-index">#${index + 1}</span>
-            <span class="player-name">${playerName}</span>
-            <button class="delete-btn">Löschen</button>
-        `;
+        const indexEl = document.createElement("span");
+        indexEl.classList.add("player-index");
+        indexEl.textContent = `#${index + 1}`;
 
+        // textContent statt innerHTML, damit Namen kein HTML einschleusen
+        const nameEl = document.createElement("span");
+        nameEl.classList.add("player-name");
+        nameEl.textContent = playerName;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.textContent = "Löschen";
+        deleteBtn.addEventListener("click", () => removePlayer(index));
+
+        playerDiv.append(indexEl, nameEl, deleteBtn);
         playerListEl.appendChild(playerDiv);
     });
 }
 
+function removePlayer(index) {
+    const players = loadPlayers();
+    players.splice(index, 1);
+    savePlayers(players);
+    buildPlayerList();
+}
 
-function addplayer() {
-    
+async function getRandomBotName(players) {
+    try {
+        const response = await fetch("../saves/botNames.json");
+        if (!response.ok) throw new Error(`Response status: ${response.status}`);
+        const { names } = await response.json();
+        const free = names.filter((name) => !players.includes(name));
+        if (free.length > 0) return free[Math.floor(Math.random() * free.length)];
+    } catch (error) {
+        console.error(error.message);
+    }
+    return `Bot#${Math.floor(Math.random() * 900) + 100}`;
+}
 
-    for (let i = 0; i < playerList.length; i++) {
-        console.log(playerList[i]);
+// isPlayer = true: Name aus dem Eingabefeld, false: Bot
+async function add(isPlayer) {
+    const players = loadPlayers();
+    if (players.length >= MAX_PLAYERS) {
+        alert(`Maximal ${MAX_PLAYERS} Spieler.`);
+        return;
     }
 
-    return playerList
+    let name;
+    if (isPlayer) {
+        const input = document.getElementById("player-input");
+        name = input?.value.trim();
+        if (!name) {
+            input?.focus();
+            return;
+        }
+        if (players.includes(name)) {
+            alert("Name ist schon vergeben.");
+            return;
+        }
+        input.value = "";
+    } else {
+        name = await getRandomBotName(players);
+    }
+
+    players.push(name);
+    savePlayers(players);
+    buildPlayerList();
 }
 
 function start() {
@@ -175,7 +234,8 @@ function clearActiveDartButton() {
         const r = Math.sqrt(dx*dx + dy*dy); //Abstand zum Mittelpunkt mit beiden Koordinaten
         const rNorm = r / (Math.min(rect.width, rect.height) / 2); // 
 
-        let angleDeg = ((Math.atan2(-dy, dx) * (180 / Math.PI))-90); //Winkel
+        // Winkel: 0° = oben (20), im Uhrzeigersinn positiv, wie in dart_tracking.py
+        let angleDeg = Math.atan2(dx, -dy) * (180 / Math.PI);
         if (angleDeg < 0) angleDeg += 360;
 
         return { r, rNorm, angleDeg };
@@ -231,6 +291,8 @@ function clearActiveDartButton() {
         console.log(
             `[Dartboard] rNorm=${polar.rNorm.toFixed(3)} | angle=${polar.angleDeg.toFixed(1)}°`
         );
+
+        clearActiveDartButton();
     }
 
  
@@ -238,7 +300,10 @@ function clearActiveDartButton() {
     function initDartboardListeners() {
         const boardImg = document.querySelector('#score-board-id img');
         if (!boardImg) {
-            console.warn('Dartboard-Bild nicht gefunden (Selector: #score-board-id img)');
+            // nur auf Spielseiten gibt es eine Scheibe
+            if (GAME_MODE !== "UNKNOWN") {
+                console.warn('Dartboard-Bild nicht gefunden (Selector: #score-board-id img)');
+            }
             return;
         }
         boardImg.style.cursor = 'crosshair'; // besseres Feedback
@@ -269,140 +334,64 @@ function getLastTurnKey(playerData) {
 
 
 
-async function getDart(player, turn, dart) {
-  const game = await getGame();
-  const dartData = game?.[player]?.[turn]?.[dart].points;
+const DART_KEYS = ["dart1", "dart2", "dart3"];
+const X01_START_SCORE = 501;
 
-  return dartData;
+function sumPoints(darts) {
+    return darts.reduce(
+        (sum, dart) => sum + (typeof dart?.points === "number" ? dart.points : 0),
+        0
+    );
 }
 
-async function showDart(player, dartKey, playerIndex) {
-    const game = await getGame();
-    const playerData = game?.[player];
-    if (!playerData) return;
+function showDarts(lastTurn, playerIndex) {
+    const dartIds = [`first-throw${playerIndex}`, `second-throw${playerIndex}`, `third-throw${playerIndex}`];
 
-    const lastTurnKey = getLastTurnKey(playerData);
-    if (!lastTurnKey) return;
-
-    const dartIdMap = {
-        dart1: `first-throw${playerIndex}`,
-        dart2: `second-throw${playerIndex}`,
-        dart3: `third-throw${playerIndex}`
-    };
-
-    const dartId = dartIdMap[dartKey];
-    const points = playerData[lastTurnKey]?.[dartKey]?.points;
-
-    const el = document.getElementById(dartId);
-    if (el) el.textContent = points ?? "-";
+    DART_KEYS.forEach((dartKey, i) => {
+        const el = document.getElementById(dartIds[i]);
+        if (el) el.textContent = lastTurn?.[dartKey]?.points ?? "-";
+    });
 }
 
-
-async function showDarts(player, playerIndex) {
-    const game = await getGame();
-    const playerData = game?.[player];
-    if (!playerData) return;
-
-    const lastTurnKey = getLastTurnKey(playerData);
-    if (!lastTurnKey) return;
-
-    for (const dartKey of ["dart1", "dart2", "dart3"]) {
-        const dartIdMap = {
-            dart1: `first-throw${playerIndex}`,
-            dart2: `second-throw${playerIndex}`,
-            dart3: `third-throw${playerIndex}`
-        };
-
-        const dartId = dartIdMap[dartKey];
-        const points = playerData[lastTurnKey]?.[dartKey]?.points;
-        const el = document.getElementById(dartId);
-        if (el) el.textContent = points ?? "-";
-    }
-}
-
-showDarts("Player1", 1);
-showDarts("Player2", 2);
-
-async function getPlayerLastTurnScore(player) {
-    const game = await getGame();
-    const playerData = game?.[player];
-    if (!playerData) return 0;
-
-    const lastTurnKey = getLastTurnKey(playerData);
-    if (!lastTurnKey) return 0;
-
-    const lastTurn = playerData[lastTurnKey];
-
-    let sum = 0;
-    for (const dartKey of ["dart1", "dart2", "dart3"]) {
-        const points = lastTurn?.[dartKey]?.points;
-        if (typeof points === "number") {
-            sum += points;
-        }
-    }
-
-    return sum;
-}
-
-async function getPlayerTotalPoints(player) {
-    const game = await getGame();
-    const playerData = game?.[player];
-    if (!playerData) return 0;
-
-    let sum = 0;
-    for (const turn of Object.values(playerData)) {
-        for (const dart of Object.values(turn)) {
-            if (typeof dart.points === "number") {
-                sum += dart.points;
-            }
-        }
-    }
-    return sum;
-}
-async function updateScoreLeft(player, playerIndex) {
-    const total = await getPlayerTotalPoints(player);
+function updateScoreLeft(playerData, playerIndex) {
     const el = document.getElementById(`score-left${playerIndex}`);
     if (!el) return;
 
-    if (GAME_MODE === "X01") {
-        const START_SCORE = 501;
-        el.textContent = START_SCORE - total;
-    }
+    const allDarts = Object.values(playerData).flatMap((turn) => Object.values(turn));
+    const total = sumPoints(allDarts);
 
-    if (GAME_MODE === "FREE") {
-        el.textContent = total;
-    }
+    if (GAME_MODE === "X01") el.textContent = X01_START_SCORE - total;
+    if (GAME_MODE === "FREE") el.textContent = total;
 }
-async function updateLastTurnScore(player, playerIndex) {
-    const game = await getGame();
+
+function updateLastTurnScore(lastTurn, playerIndex) {
+    const el = document.getElementById(`score-thrown${playerIndex}`);
+    if (el) el.textContent = sumPoints(DART_KEYS.map((key) => lastTurn?.[key]));
+}
+
+function refreshPlayer(game, player, index) {
     const playerData = game?.[player];
     if (!playerData) return;
 
     const lastTurnKey = getLastTurnKey(playerData);
-    if (!lastTurnKey) return;
+    const lastTurn = lastTurnKey ? playerData[lastTurnKey] : undefined;
 
-    let sum = 0;
-    for (const dartKey of ["dart1", "dart2", "dart3"]) {
-        const points = playerData[lastTurnKey]?.[dartKey]?.points;
-        if (typeof points === "number") sum += points;
-    }
-
-    const el = document.getElementById(`score-thrown${playerIndex}`);
-    if (el) el.textContent = sum;
-}
-refreshPlayer("Player1", 1);
-refreshPlayer("Player2", 2);
-
-function refreshPlayer(player, index) {
-    updateScoreLeft(player, index);
-    updateLastTurnScore(player, index);
-    showDarts(player, index);
+    updateScoreLeft(playerData, index);
+    updateLastTurnScore(lastTurn, index);
+    showDarts(lastTurn, index);
 }
 
-console.log(GAME_MODE);
+// game.json nur einmal laden und nur auf Spielseiten anzeigen
+async function refreshGame() {
+    const game = await getGame();
+    if (!game) return;
+
+    Object.keys(game).forEach((player, i) => refreshPlayer(game, player, i + 1));
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     buildPlayerList();
+    if (GAME_MODE !== "UNKNOWN") refreshGame();
 });
 
 /********* X01-page ********/

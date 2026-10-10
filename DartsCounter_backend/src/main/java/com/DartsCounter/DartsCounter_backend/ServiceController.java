@@ -26,8 +26,9 @@ public class ServiceController {
 
     @PostMapping("/setRunning/{bool}")
     public Boolean setRunning(@PathVariable("bool") Boolean bool){
+        boolean wasRunning = arrowDetection.isRunning();
         arrowDetection.setRunning(bool);
-        if(bool){
+        if(bool && !wasRunning){ // nicht doppelt starten
             arrowDetection.BackgroundSubtractor(0);
             arrowDetection.BackgroundSubtractor(2);
             arrowDetection.BackgroundSubtractor(4);
@@ -43,7 +44,7 @@ public class ServiceController {
     @Autowired
     private ScoreCommunication scoreCommunication;
 */
-    @PostMapping("/scooring/coords/{playerId}/{dart}/{angle}/{radius}")
+    @PostMapping("/scoring/coords/{playerId}/{dart}/{angle}/{radius}")
     public String recieveCoords(@PathVariable("playerId") int playerId, @PathVariable("dart") int dart, @PathVariable("angle") BigDecimal angle, @PathVariable("radius") BigDecimal radius){
         return "player: " + playerId + " - Dart: " + dart + " - angle: " + angle + " - radius: " + radius;
     }

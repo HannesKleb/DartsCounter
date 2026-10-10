@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScoreCommunication {
     
+    private static final BigDecimal INNER_BULL_RADIUS = new BigDecimal("0.0282");
+
     public String coordsToField(BigDecimal radius, BigDecimal angle){
         
-        if (radius < 0.0282){ // check inner Bull
+        if (radius.compareTo(INNER_BULL_RADIUS) < 0){ // check inner Bull
             return "IB";
         }
         
