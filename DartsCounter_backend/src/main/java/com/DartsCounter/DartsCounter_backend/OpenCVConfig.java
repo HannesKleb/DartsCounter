@@ -7,7 +7,7 @@ import jakarta.annotation.PostConstruct;
 public class OpenCVConfig {
     @PostConstruct
     public void init() {
-        OpenCV.loadShared();
+        OpenCV.loadLocally(); // loadShared() geht ab Java 12 nicht mehr
         System.out.println("OpenCV lib loaded successfully. ver: " + org.opencv.core.Core.VERSION);
     }
 }
