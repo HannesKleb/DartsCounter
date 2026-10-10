@@ -140,11 +140,17 @@ function pressNumber(number) {
 /********* Scheibe *********/
 
 function initBoard() {
-    const boardImg = document.querySelector("#score-board-id img");
-    if (!boardImg) return;
-    boardImg.style.cursor = "crosshair";
-    boardImg.addEventListener("click", (event) => {
-        addHumanDart(fieldFromScreen(boardImg, event.clientX, event.clientY));
+    const container = document.getElementById("board");
+    if (!container) return;
+    const svg = createBoardSvg();
+    container.replaceChildren(svg);
+
+    svg.addEventListener("click", (event) => {
+        // Feld direkt vom angetippten Ring-Stück, sonst über die Position berechnen
+        const target = event.target.closest("[data-field]");
+        const field = target ? target.dataset.field : fieldFromScreen(svg, event.clientX, event.clientY);
+        if (target?.classList.contains("board-field")) replayAnimation(target, "hit");
+        addHumanDart(field);
     });
 }
 

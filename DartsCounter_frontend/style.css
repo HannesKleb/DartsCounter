@@ -24,7 +24,7 @@
 
 /********* Design: ruhiges Glas *********/
 /* Milchglas-Karten auf hellem bzw. dunklem Grund (je nach Systemeinstellung).
-   Dahinter nur zwei sehr schwache, feste Lichtflächen (neutral + Hauch Grün), keine bunten Farben.
+   Hintergrund einfarbig.
    Glas-Kante: 1px Rand + feine Lichtkante oben (inset). Ohne Blur-Unterstützung oder bei
    "Transparenz reduzieren" werden die Karten deckend.
    Eine Grau-Familie (Zinc), ein Akzent (Smaragdgrün, angelehnt an das Grün der Scheibe).
@@ -36,8 +36,6 @@
     --accent-soft: rgba(52, 211, 153, 0.16);
     --danger: #be123c;
     --page-bg: #f4f4f5;
-    --page-light: radial-gradient(60vmax 60vmax at 8% 0%, rgba(52, 211, 153, 0.12), transparent 70%),
-        radial-gradient(70vmax 70vmax at 100% 100%, rgba(24, 24, 27, 0.07), transparent 70%);
     --text: #18181b;
     --muted: #52525b;
     --glass: rgba(250, 250, 250, 0.6);
@@ -61,8 +59,6 @@
         --accent-soft: rgba(52, 211, 153, 0.14);
         --danger: #fb7185;
         --page-bg: #09090b;
-        --page-light: radial-gradient(60vmax 60vmax at 8% 0%, rgba(52, 211, 153, 0.09), transparent 70%),
-            radial-gradient(70vmax 70vmax at 100% 100%, rgba(250, 250, 250, 0.05), transparent 70%);
         --text: #fafafa;
         --muted: #a1a1aa;
         --glass: rgba(39, 39, 42, 0.45);
@@ -91,8 +87,7 @@
 }
 html {
     min-height: 100%;
-    background: var(--page-light), var(--page-bg);
-    background-attachment: fixed;
+    background: var(--page-bg);
 }
 
 body {
@@ -623,11 +618,72 @@ option {
     text-align: center;
     margin-top: 1vh;
 }
-.score-board img {
+/* Dartscheibe im Stil der App: Einzelfelder in zwei Grautönen, Double/Triple abwechselnd
+   in Akzent-Grün und einem dunkleren Grün, Zahlen in der Textfarbe */
+:root {
+    --board-single-a: #27272a;
+    --board-single-b: #e4e4e7;
+    --board-ring-a: #34d399;
+    --board-ring-b: #047857;
+    --board-wire: var(--page-bg);
+    --board-rim: var(--glass-solid);
+    --board-hit: #fafafa;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --board-single-a: #09090b;
+        --board-single-b: #3f3f46;
+        --board-ring-b: #065f46;
+        --board-hit: #fafafa;
+    }
+}
+.board {
+    width: min(100%, 52vh);
+    margin: 0 auto;
+}
+.board-svg {
+    display: block;
     width: 100%;
-    max-width: 50vh;
     height: auto;
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.45));
+    cursor: crosshair;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+.board-rim {
+    fill: var(--board-rim);
+    stroke: var(--glass-border);
+    stroke-width: 1;
+}
+.board-field {
+    stroke: var(--board-wire);
+    stroke-width: 1.2;
+    transition: opacity 0.15s ease-out;
+}
+.single-a { fill: var(--board-single-a); }
+.single-b { fill: var(--board-single-b); }
+.ring-a { fill: var(--board-ring-a); }
+.ring-b { fill: var(--board-ring-b); }
+.bull-outer { fill: var(--board-ring-b); }
+.bull-inner { fill: var(--board-ring-a); }
+.board-number {
+    fill: var(--text);
+    font-size: 22px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+@media (hover: hover) {
+    .board-field:hover {
+        opacity: 0.75;
+    }
+}
+/* kurzes Aufleuchten des getroffenen Feldes als Rückmeldung */
+.board-field.hit {
+    animation: field-hit 0.35s ease-out;
+}
+@keyframes field-hit {
+    from { fill: var(--board-hit); }
 }
 .toast {
     position: fixed;

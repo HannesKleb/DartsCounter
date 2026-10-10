@@ -175,3 +175,73 @@ function allSetups(score, count) {
     }
     return result;
 }
+
+/********* Scheibe als SVG (Farben kommen aus style.css, passen sich Hell/Dunkel an) *********/
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function polarPoint(radius, angleDeg) {
+    const a = angleDeg * (Math.PI / 180);
+    return `${(radius * Math.sin(a)).toFixed(2)} ${(-radius * Math.cos(a)).toFixed(2)}`;
+}
+
+// Ringstück zwischen zwei Radien und zwei Winkeln (0° = oben, im Uhrzeigersinn)
+function ringSegmentPath(innerR, outerR, fromDeg, toDeg) {
+    return [
+        `M ${polarPoint(outerR, fromDeg)}`,
+        `A ${outerR} ${outerR} 0 0 1 ${polarPoint(outerR, toDeg)}`,
+        `L ${polarPoint(innerR, toDeg)}`,
+        `A ${innerR} ${innerR} 0 0 0 ${polarPoint(innerR, fromDeg)}`,
+        "Z"
+    ].join(" ");
+}
+
+function svgEl(tag, attrs) {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+    return el;
+}
+
+function createBoardSvg() {
+    const R = BOARD_RADIUS;
+    const svg = svgEl("svg", {
+        viewBox: `${-R.board} ${-R.board} ${R.board * 2} ${R.board * 2}`,
+        class: "board-svg",
+        role: "img",
+        "aria-label": "Dartscheibe zum Antippen"
+    });
+
+    svg.append(svgEl("circle", { r: R.board, class: "board-rim", "data-field": "M" }));
+
+    // Ringe von außen nach innen: Double, äußeres Single, Triple, inneres Single
+    const rings = [
+        { inner: R.doubleInner, outer: R.doubleOuter, prefix: "D", kind: "ring" },
+        { inner: R.tripleOuter, outer: R.doubleInner, prefix: "S", kind: "single" },
+        { inner: R.tripleInner, outer: R.tripleOuter, prefix: "T", kind: "ring" },
+        { inner: R.outerBull, outer: R.tripleInner, prefix: "S", kind: "single" }
+    ];
+
+    BOARD_NUMBERS.forEach((number, i) => {
+        const from = i * 18 - 9;
+        const to = i * 18 + 9;
+        const tone = i % 2 === 0 ? "a" : "b"; // wie auf der echten Scheibe abwechselnd
+        for (const ring of rings) {
+            svg.append(svgEl("path", {
+                d: ringSegmentPath(ring.inner, ring.outer, from, to),
+                class: `board-field ${ring.kind}-${tone}`,
+                "data-field": `${ring.prefix}${number}`
+            }));
+        }
+        const label = svgEl("text", {
+            x: (200 * Math.sin(i * 18 * Math.PI / 180)).toFixed(1),
+            y: (-200 * Math.cos(i * 18 * Math.PI / 180)).toFixed(1),
+            class: "board-number"
+        });
+        label.textContent = number;
+        svg.append(label);
+    });
+
+    svg.append(svgEl("circle", { r: R.outerBull, class: "board-field bull-outer", "data-field": "SB" }));
+    svg.append(svgEl("circle", { r: R.innerBull, class: "board-field bull-inner", "data-field": "DB" }));
+    return svg;
+}
