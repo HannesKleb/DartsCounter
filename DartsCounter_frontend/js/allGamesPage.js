@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function renderGames() {
-    const panel = document.querySelector('[data-group="games"] [data-panel][style*="block"]');
+    const panel = document.querySelector('[data-group="games"] [data-panel]:not([style*="none"])');
     if (!panel) return;
     const mode = panel.dataset.mode;
 

@@ -70,6 +70,14 @@
     --text-xl: 1.44rem;
     --text-2xl: 1.728rem;
     --touch: 56px;            /* Mindestgröße Zahlentasten (Material 48, Empfehlung Darts 56-72) */
+    --space-5: 48px;
+    --control: 40px;          /* Höhe von Buttons/Feldern mit Maus */
+    --content-max: 1100px;
+}
+@media (pointer: coarse) {
+    :root {
+        --control: 48px;      /* Touch: Material 48dp */
+    }
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -102,6 +110,10 @@
         --glass: var(--glass-solid);
         --frosted: var(--glass-solid);
     }
+}
+/* Breite/Höhe schließen Innenabstand und Rand ein */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 html {
     min-height: 100%;
@@ -162,8 +174,10 @@ button:disabled {
 }
 input, select {
     font: inherit;
+    font-size: var(--text-base);   /* 16px: verhindert Zoomen auf iOS */
+    min-height: var(--control);
     color: var(--text);
-    padding: 6px 10px;
+    padding: 0 12px;
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-small);
     background: var(--glass-input);
@@ -201,8 +215,13 @@ option {
     background: var(--frosted);
 }
 
+.header,
 .content {
-    padding: 1vh 0;
+    max-width: var(--content-max);
+    margin-inline: auto;
+}
+.content {
+    padding: var(--space-1) 0;
 }
 .selection {
     margin: 0.5vh auto;
@@ -263,21 +282,24 @@ option {
 
 /********* Navigationsleiste *********/
 .bar {
-    padding: 8px;
-    gap: 6px;
+    padding: var(--space-1);
+    gap: var(--space-1);
     align-items: center;
     border-radius: var(--radius);
     display: flex;
     justify-content: center;
     position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: var(--content-max);
+    margin-inline: auto;
     z-index: 10;
 }
 .bar-btn, .bar-btn-active {
-    width: 18vw;
-    min-height: 40px;
+    flex: 1;
+    min-height: var(--control);
+    padding: 0 var(--space-1);
     border: none;
     border-radius: var(--pill);
     display: flex;
@@ -288,9 +310,11 @@ option {
     color: var(--muted);
     background: transparent;
 }
-.bar-btn:hover {
-    background: var(--glass-strong);
-    color: var(--text);
+@media (hover: hover) {
+    .bar-btn:hover {
+        background: var(--glass-strong);
+        color: var(--text);
+    }
 }
 .bar-btn-active {
     background: var(--accent);
@@ -303,17 +327,19 @@ option {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-1);
 }
 .selection-btn button {
-    padding: 1vh 3.5vw;
-    min-height: 40px;
+    padding: 0 var(--space-3);
+    min-height: var(--control);
     background: var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
 }
-.selection-btn button:hover {
-    background: var(--glass-strong);
+@media (hover: hover) {
+    .selection-btn button:hover {
+        background: var(--glass-strong);
+    }
 }
 .selection-btn button.active {
     background: var(--accent);
@@ -323,31 +349,45 @@ option {
 }
 
 /********* Hauptseite *********/
+/* Abschnitte: 48px Abstand (Handy 32px), Inhalt in Karten 24px Innenabstand */
+.player-selection,
+.start {
+    margin-top: var(--space-5);
+}
 .selection-mode {
-    width: 90vw;
+    width: 100%;
     border-radius: var(--radius);
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    margin-top: var(--space-2);
 }
 .mode-options {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 24px;
-    padding: 14px;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-3);
+    align-items: end;
 }
 .mode-options label {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.mode-options label select,
+.mode-options label input {
+    color: var(--text);
 }
 .mode-options .checkbox {
     flex-direction: row;
+    align-items: center;
+    min-height: var(--control);
+    font-size: var(--text-base);
+    color: var(--text);
 }
 .mode-help {
-    width: 100%;
+    grid-column: 1 / -1;
+    max-width: 65ch;
     margin: 0;
     color: var(--muted);
 }
@@ -355,59 +395,62 @@ option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-2);
     border-left: 4px solid var(--accent);
     border-radius: var(--radius);
-    padding: 12px 16px;
-    margin-bottom: 12px;
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-3);
 }
 .running-game-buttons {
     display: flex;
-    gap: 8px;
+    gap: var(--space-1);
 }
 .running-game-buttons button {
+    min-height: var(--control);
+    padding: 0 var(--space-2);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
-    padding: 8px 14px;
     background: var(--glass-strong);
 }
 .player-input {
-    margin-top: 1vh;
+    margin-top: var(--space-2);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-1);
 }
 .player-input > label {
     flex-basis: 100%;
     color: var(--muted);
-    font-size: 0.9em;
+    font-size: var(--text-sm);
 }
 .input-btn {
-    padding: 6px 14px;
+    min-height: var(--control);
+    padding: 0 var(--space-2);
     background: var(--glass-strong);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
 }
-.input-btn:hover {
-    background: var(--glass-strong);
-    border-color: var(--accent);
+@media (hover: hover) {
+    .input-btn:hover {
+        border-color: var(--accent);
+    }
 }
 #player-input, #new-player {
-    width: 12em;
+    flex: 1 1 14em;
+    max-width: 22em;
 }
 .start {
     display: flex;
     justify-content: center;
-    margin-top: 14px;
 }
 .start button {
-    padding: 1.6vh 9vw;
-    min-height: 48px;
+    min-height: var(--touch);
+    padding: 0 var(--space-5);
     background: var(--accent);
     color: var(--accent-text);
     font-weight: 700;
-    font-size: 1.1em;
+    font-size: var(--text-lg);
     border: none;
     border-radius: var(--pill);
 }
@@ -415,31 +458,34 @@ option {
     filter: brightness(1.05);
 }
 .player-list {
-    margin-top: 2vh;
+    margin-top: var(--space-2);
 }
 .player-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2);
     border-radius: var(--radius);
-    margin-bottom: 8px;
+    margin-bottom: var(--space-1);
 }
 .player-item .player-name {
     flex: 1;
 }
 .player-index {
     color: var(--muted);
+    font-variant-numeric: tabular-nums;
 }
 .player-actions {
     display: flex;
-    gap: 6px;
+    gap: var(--space-1);
 }
 .player-item button {
+    min-height: var(--control);
+    padding: 0 var(--space-2);
     background: var(--glass-strong);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
-    padding: 4px 10px;
 }
 
 /********* Statistiken / Alle Spiele *********/
@@ -557,7 +603,7 @@ option {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 1vh 0;
+    margin: var(--space-1) 0;
 }
 .scoring-stats {
     border-radius: var(--radius);
@@ -656,7 +702,7 @@ option {
 }
 .score-board {
     text-align: center;
-    margin-top: 1vh;
+    margin-top: var(--space-1);
 }
 /* Dartscheibe im Stil der App: Einzelfelder in zwei Grautönen, Double/Triple abwechselnd
    in Akzent-Grün und einem dunkleren Grün, Zahlen in der Textfarbe */
@@ -789,7 +835,7 @@ option {
 #cricket-board {
     display: flex;
     justify-content: center;
-    margin: 1vh 0;
+    margin: var(--space-2) 0;
 }
 .cricket-table {
     border-collapse: separate;
@@ -914,13 +960,18 @@ button:active:not(:disabled) {
         gap: 4px;
     }
     .bar-btn, .bar-btn-active {
-        width: auto;
-        flex: 1;
         font-size: 12px;
         padding: 0 2px;
     }
-    .selection-mode {
-        width: 100%;
+    .player-selection,
+    .start {
+        margin-top: var(--space-4);
+    }
+    .mode-options {
+        padding: var(--space-2);
+    }
+    .selection-btn button {
+        padding: 0 var(--space-2);
     }
     /* 7 Tasten pro Reihe über die volle Breite, Lücke 6px (8px passt am Handy nicht) */
     .score-button table {

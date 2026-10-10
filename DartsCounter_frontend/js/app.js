@@ -47,7 +47,7 @@ function showMode(id, group) {
     groupEl.querySelectorAll("[data-panel]").forEach((panel) => {
         const show = panel.id === id;
         const wasHidden = panel.style.display === "none";
-        panel.style.display = show ? "block" : "none";
+        panel.style.display = show ? "" : "none"; // "" = Darstellung aus style.css (z. B. Raster)
         if (show && wasHidden) replayAnimation(panel, "panel-in");
     });
     groupEl.querySelectorAll("button[data-target]").forEach((btn) => {

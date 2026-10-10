@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function renderStats() {
-    const panel = document.querySelector('[data-group="stats"] [data-panel][style*="block"]');
+    const panel = document.querySelector('[data-group="stats"] [data-panel]:not([style*="none"])');
     if (!panel) return;
     const mode = panel.dataset.mode;
     const showBots = document.getElementById("show-bots").checked;
