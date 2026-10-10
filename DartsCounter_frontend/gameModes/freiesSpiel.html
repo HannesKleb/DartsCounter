@@ -5,286 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../script.js" defer></script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/dartboard.js" defer></script>
+    <script src="../js/rules.js" defer></script>
+    <script src="../js/stats.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/game.js" defer></script>
 </head>
-<body>
+<body data-mode="FREE">
     <div class="header">
         <h1>Darts Counter</h1>
-         <div class="page">
-            <h2>Spiel</h2>
+        <div class="page">
+            <h2 id="game-title">Spiel</h2>
+            <div class="game-options" id="game-options"></div>
         </div>
     </div>
     <div class="content">
-       
-        <div class="back-btn" >
-            <button id="back-btn" onclick="backBtn()">
-                Zurück
-            </button>
-        </div>
-        <div class="stats">
-            <div class="scoring-stats" id="free-scoring-stats1" style="display:block;">
-                <div class="big-scoring-stats">
-                    <div id="player1">
-                        Spieler 1
-                    </div>
-                    <div class="score-left" id="score-left1" onload="scoreLeft()">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw1" aria-pressed="false" onclick="togglePressed('first-throw1')">
-                            
-                        </button>
-                        <button class="last-score-field" id="second-throw1" aria-pressed="false" onclick="togglePressed('second-throw1')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw1" aria-pressed="false" onclick="togglePressed('third-throw1')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown1">
-                        180
-                    </div>
-                </div>
+        <div class="game-topbar">
+            <div class="back-btn">
+                <button id="back-btn" onclick="backBtn()">Hauptseite</button>
             </div>
-            <div class="scoring-stats" id="free-scoring-stats2" style="display:block;">
-                <div class="big-scoring-stats">
-                    <div id="player2">
-                        Spieler 2
-                    </div>
-                    <div class="score-left" id="score-left2">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw2" aria-pressed="false" onclick="togglePressed('first-throw2')">
-                            3
-                        </button>
-                        <button class="last-score-field" id="second-throw2" aria-pressed="false" onclick="togglePressed('second-throw2')">
-                            3
-                        </button>
-                        <button class="last-score-field" id="third-throw2" aria-pressed="false" onclick="togglePressed('third-throw2')">
-                            3
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown2">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats3" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player3">
-                        Spieler 3 
-                    </div>
-                    <div class="score-left" id="score-left3">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw3" aria-pressed="false" onclick="togglePressed('first-throw3')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw3" aria-pressed="false" onclick="togglePressed('second-throw3')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw3" aria-pressed="false" onclick="togglePressed('third-throw3')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown3">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats4" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player4">
-                        Spieler 4 
-                    </div>
-                    <div class="score-left" id="score-left4">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw4" aria-pressed="false" onclick="togglePressed('first-throw4')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw4" aria-pressed="false" onclick="togglePressed('second-throw4')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw4" aria-pressed="false" onclick="togglePressed('third-throw4')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown4">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats5" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player5">
-                        Spieler 5 
-                    </div>
-                    <div class="score-left" id="score-left5">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw5" aria-pressed="false" onclick="togglePressed('first-throw5')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw5" aria-pressed="false" onclick="togglePressed('second-throw5')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw5" aria-pressed="false" onclick="togglePressed('third-throw5')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown5">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats6" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player6">
-                        Spieler 6 
-                    </div>
-                    <div class="score-left" id="score-left6">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw6" aria-pressed="false" onclick="togglePressed('first-throw6')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw6" aria-pressed="false" onclick="togglePressed('second-throw6')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw6" aria-pressed="false" onclick="togglePressed('third-throw6')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown6">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats7" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player7">
-                        Spieler 7
-                    </div>
-                    <div class="score-left" id="score-left7">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw7" aria-pressed="false" onclick="togglePressed('first-throw7')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw7" aria-pressed="false" onclick="togglePressed('second-throw7')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw7" aria-pressed="false" onclick="togglePressed('second-throw7')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown7">
-                        180
-                    </div>
-                </div>
-            </div>
-            <div class="scoring-stats" id="free-scoring-stats8" style="display:none;">
-                <div class="big-scoring-stats">
-                    <div id="player8">
-                        Spieler 8
-                    </div>
-                    <div class="score-left" id="score-left8">
-                        144
-                    </div>
-                    <div class="last-score">
-                        <button class="last-score-field" id="first-throw8" aria-pressed="false" onclick="togglePressed('first-throw8')">
-
-                        </button>
-                        <button class="last-score-field" id="second-throw8" aria-pressed="false" onclick="togglePressed('second-throw8')">
-                            
-                        </button>
-                        <button class="last-score-field" id="third-throw8" aria-pressed="false" onclick="togglePressed('second-throw8')">
-                            
-                        </button>
-                    </div>
-                </div>
-                <div class="small-scoring-stats">
-                    <div id="score-thrown8">
-                        180
-                    </div>
-                </div>
+            <div class="game-info" id="game-info"></div>
+            <div class="back-btn">
+                <button id="abort-btn" onclick="abortGame()">Spiel abbrechen</button>
             </div>
         </div>
+        <div class="stats" id="players"></div>
         <div class="button-board-system" data-group="board">
             <div class="selection-btn">
-                <button class="selection-button" data-target="score-button-id" onclick="showMode('score-button-id', 'board')">
-                        Tastatur
-                    </button>
-                    <button class="selection-button" data-target="score-board-id" onclick="showMode('score-board-id', 'board')">
-                        Scheibe
-                    </button>
+                <button class="selection-button" data-target="score-button-id" onclick="showMode('score-button-id', 'board')">Tastatur</button>
+                <button class="selection-button" data-target="score-board-id" onclick="showMode('score-board-id', 'board')">Scheibe</button>
             </div>
             <div class="selection" id="selection-score-system">
                 <div class="score-button" id="score-button-id" data-panel style="display:block;">
                     <table>
                         <tbody>
                             <tr>
-                                <td class="score-button-numbers"><button id="1">1</button></td>
-                                <td class="score-button-numbers"><button id="2">2</button></td>
-                                <td class="score-button-numbers"><button id="3">3</button></td>
-                                <td class="score-button-numbers"><button id="4">4</button></td>
-                                <td class="score-button-numbers"><button id="5">5</button></td>
-                                <td class="score-button-numbers"><button id="6">6</button></td>
-                                <td class="score-button-numbers"><button id="7">7</button></td>
+                                <td class="score-button-numbers"><button data-number="1">1</button></td>
+                                <td class="score-button-numbers"><button data-number="2">2</button></td>
+                                <td class="score-button-numbers"><button data-number="3">3</button></td>
+                                <td class="score-button-numbers"><button data-number="4">4</button></td>
+                                <td class="score-button-numbers"><button data-number="5">5</button></td>
+                                <td class="score-button-numbers"><button data-number="6">6</button></td>
+                                <td class="score-button-numbers"><button data-number="7">7</button></td>
                             </tr>
                             <tr>
-                                <td class="score-button-numbers"><button id="8">8</button></td>
-                                <td class="score-button-numbers"><button id="9">9</button></td>
-                                <td class="score-button-numbers"><button id="10">10</button></td>
-                                <td class="score-button-numbers"><button id="11">11</button></td>
-                                <td class="score-button-numbers"><button id="12">12</button></td>
-                                <td class="score-button-numbers"><button id="13">13 </button></td>
-                                <td class="score-button-numbers"><button id="14">14</button></td>
+                                <td class="score-button-numbers"><button data-number="8">8</button></td>
+                                <td class="score-button-numbers"><button data-number="9">9</button></td>
+                                <td class="score-button-numbers"><button data-number="10">10</button></td>
+                                <td class="score-button-numbers"><button data-number="11">11</button></td>
+                                <td class="score-button-numbers"><button data-number="12">12</button></td>
+                                <td class="score-button-numbers"><button data-number="13">13</button></td>
+                                <td class="score-button-numbers"><button data-number="14">14</button></td>
                             </tr>
                             <tr>
-                                <td class="score-button-numbers"><button id="15">15</button></td>
-                                <td class="score-button-numbers"><button id="16">16</button></td>
-                                <td class="score-button-numbers"><button id="17">17</button></td>
-                                <td class="score-button-numbers"><button id="18">18</button></td>
-                                <td class="score-button-numbers"><button id="19">19</button></td>
-                                <td class="score-button-numbers"><button id="20">20</button></td>
-                                <td class="score-button-numbers"><button id="25">25</button></td>
+                                <td class="score-button-numbers"><button data-number="15">15</button></td>
+                                <td class="score-button-numbers"><button data-number="16">16</button></td>
+                                <td class="score-button-numbers"><button data-number="17">17</button></td>
+                                <td class="score-button-numbers"><button data-number="18">18</button></td>
+                                <td class="score-button-numbers"><button data-number="19">19</button></td>
+                                <td class="score-button-numbers"><button data-number="20">20</button></td>
+                                <td class="score-button-numbers"><button data-number="25">25</button></td>
                             </tr>
                             <tr>
-                                <td class="score-button-numbers" ><button id="0">0</button></td>
-                                <td class="score-button-extra"  colspan="2"><button id="double-btn">Double</button></td>
-                                <td class="score-button-extra"  colspan="2"><button id="triple-btn">Triple</button></td>
-                                <td class="score-button-extra"  colspan="2"><button id="undo-btn">Back</button></td>
+                                <td class="score-button-numbers"><button data-number="0">0</button></td>
+                                <td class="score-button-extra" colspan="2"><button id="double-btn">Double</button></td>
+                                <td class="score-button-extra" colspan="2"><button id="triple-btn">Triple</button></td>
+                                <td class="score-button-extra" colspan="2"><button id="undo-btn">Zurück</button></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="score-board" id="score-board-id" data-panel style="display:none;">
-                    <img src="../resources/dartboard.svg" draggable="false">
+                    <img src="../resources/dartboard.svg" draggable="false" alt="Dartscheibe">
                 </div>
             </div>
         </div>
     </div>
+    <div class="toast" id="toast"></div>
+    <div class="result-overlay" id="result-overlay" hidden></div>
 </body>
 </html>

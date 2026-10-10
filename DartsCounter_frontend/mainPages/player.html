@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../script.js" defer></script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/dartboard.js" defer></script>
+    <script src="../js/rules.js" defer></script>
+    <script src="../js/stats.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/playersPage.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -15,14 +20,19 @@
         </div>
     </div>
     <div class="content">
-        
+        <div class="player-input">
+            <label for="new-player">Neuer Spieler:</label>
+            <input type="text" id="new-player" placeholder="max. 16 Zeichen" maxlength="16">
+            <button class="input-btn" id="new-player-btn">Hinzufügen</button>
+        </div>
+        <div class="player-list" id="known-player-list"></div>
     </div>
     <div class="bar">
-        <button class="bar-btn" id="main" onclick="bar(`index.html`)">Hauptseite</button>
-        <button class="bar-btn-active" id="player" onclick="bar(`player.html`)">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
-        <button class="bar-btn" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
-        <button class="bar-btn" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
+        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn-active" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
     </div>
 </body>
 </html>

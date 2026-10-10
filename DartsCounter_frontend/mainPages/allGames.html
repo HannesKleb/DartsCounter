@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../script.js" defer></script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/dartboard.js" defer></script>
+    <script src="../js/rules.js" defer></script>
+    <script src="../js/stats.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/allGamesPage.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -15,45 +20,25 @@
         </div>
     </div>
     <div class="content" data-group="games">
-        <div class="selection-btn"> 
-            <button class="selection-button" id="X01-btn" data-target="X01-games" onclick="showMode('X01-games', 'games')">
-                X01
-            </button>
-            <button class="selection-button" id="cricket-btn" data-target="cricket-games" onclick="showMode('cricket-games', 'games')">
-                Cricket
-            </button>
-            <button class="selection-button" id="around-the-clock-btn" data-target="around-the-clock-games" onclick="showMode('around-the-clock-games', 'games')">
-                Around the Clock
-            </button>
-            <button class="selection-button" id="g121-btn" data-target="g121-games" onclick="showMode('g121-games', 'games')">
-                121
-            </button>
-            <button class="selection-button" id="freies-spiel-btn" data-target="freies-spiel-games" onclick="showMode('freies-spiel-games', 'games')">
-                Freies Spiel
-            </button>
+        <div class="selection-btn">
+            <button class="selection-button" id="X01-btn" data-target="X01-games" onclick="showMode('X01-games', 'games')">X01</button>
+            <button class="selection-button" id="cricket-btn" data-target="CRICKET-games" onclick="showMode('CRICKET-games', 'games')">Cricket</button>
+            <button class="selection-button" id="around-the-clock-btn" data-target="ATC-games" onclick="showMode('ATC-games', 'games')">Around the Clock</button>
+            <button class="selection-button" id="g121-btn" data-target="G121-games" onclick="showMode('G121-games', 'games')">121</button>
+            <button class="selection-button" id="freies-spiel-btn" data-target="FREE-games" onclick="showMode('FREE-games', 'games')">Freies Spiel</button>
         </div>
-        <div id="X01-games" data-panel style="display:none;">
-
-        </div>
-        <div id="cricket-games" data-panel style="display:none;">
-            
-        </div>
-        <div id="around-the-clock-games" data-panel style="display:none;">
-            
-        </div>
-        <div id="g121-games" data-panel style="display:none;">
-            
-        </div>
-        <div id="freies-spiel-games" data-panel style="display:none;">
-            
-        </div>
+        <div id="X01-games" class="list-panel" data-panel data-mode="X01" style="display:none;"></div>
+        <div id="CRICKET-games" class="list-panel" data-panel data-mode="CRICKET" style="display:none;"></div>
+        <div id="ATC-games" class="list-panel" data-panel data-mode="ATC" style="display:none;"></div>
+        <div id="G121-games" class="list-panel" data-panel data-mode="G121" style="display:none;"></div>
+        <div id="FREE-games" class="list-panel" data-panel data-mode="FREE" style="display:none;"></div>
     </div>
     <div class="bar">
-        <button class="bar-btn" id="main" onclick="bar(`index.html`)">Hauptseite</button>
-        <button class="bar-btn" id="player" onclick="bar(`player.html`)">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
-        <button class="bar-btn-active" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
-        <button class="bar-btn" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
+        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn-active" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
     </div>
 </body>
 </html>

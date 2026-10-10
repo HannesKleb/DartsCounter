@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts Counter</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../script.js" defer></script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/settingsPage.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -14,15 +16,62 @@
             <h2>Einstellungen</h2>
         </div>
     </div>
-    <div class="content">
-        
+    <div class="content settings">
+        <section class="settings-section">
+            <h3>Verbindung</h3>
+            <label>Backend-Adresse (leer = automatisch)
+                <input type="text" id="backend-url" placeholder="http://darts-counter:8080">
+            </label>
+            <div class="settings-row">
+                <button class="input-btn" id="backend-save">Speichern &amp; testen</button>
+                <span id="backend-status" class="hint"></span>
+            </div>
+        </section>
+        <section class="settings-section">
+            <h3>Spiel</h3>
+            <label>Standard-Eingabe
+                <select id="input-mode">
+                    <option value="keyboard">Tastatur</option>
+                    <option value="board">Scheibe</option>
+                </select>
+            </label>
+            <label>Standard-Stärke für neue Bots
+                <select id="bot-level">
+                    <option value="easy">Leicht</option>
+                    <option value="medium">Mittel</option>
+                    <option value="hard">Schwer</option>
+                </select>
+            </label>
+            <label>Bot-Geschwindigkeit
+                <select id="bot-delay">
+                    <option value="300">Schnell</option>
+                    <option value="700">Normal</option>
+                    <option value="1200">Langsam</option>
+                </select>
+            </label>
+            <span id="settings-status" class="hint"></span>
+        </section>
+        <section class="settings-section">
+            <h3>Daten</h3>
+            <div class="settings-row">
+                <button class="input-btn" id="export-btn">Backup herunterladen</button>
+                <label class="input-btn file-btn">Backup einspielen
+                    <input type="file" id="import-file" accept="application/json,.json" hidden>
+                </label>
+            </div>
+            <div class="settings-row">
+                <button class="danger-btn" id="delete-games">Alle Spiele löschen</button>
+                <button class="danger-btn" id="delete-players">Alle Spieler löschen</button>
+            </div>
+            <span id="data-status" class="hint"></span>
+        </section>
     </div>
     <div class="bar">
-        <button class="bar-btn" id="main" onclick="bar(`index.html`)">Hauptseite</button>
-        <button class="bar-btn" id="player" onclick="bar(`player.html`)">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar(`stats.html`)">Statistiken</button>
-        <button class="bar-btn" id="allGames" onclick="bar(`allGames.html`)">Alle Spiele</button>
-        <button class="bar-btn-active" id="settings" onclick="bar(`settings.html`)">Einstellungen</button>
+        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn-active" id="settings" onclick="bar('settings.html')">Einstellungen</button>
     </div>
 </body>
 </html>
