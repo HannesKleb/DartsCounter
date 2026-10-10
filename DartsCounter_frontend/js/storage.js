@@ -21,12 +21,62 @@ function setBackendUrl(url) {
     }
 }
 
+const BACKEND_TIMEOUT_MS = 2500;    // länger wird nicht gewartet
+const OFFLINE_RETRY_MS = 30000;     // so lange nach einem Fehlschlag nicht erneut versuchen
+
+// per Doppelklick geöffnet (file://) und keine Adresse eingetragen: kein Backend, sofort lokal speichern
+function backendDisabled() {
+    if (window.location.protocol !== "file:") return false;
+    try {
+        return !localStorage.getItem("backendUrl");
+    } catch {
+        return true;
+    }
+}
+
+function isMarkedOffline() {
+    try {
+        const at = parseInt(sessionStorage.getItem("backendOfflineAt") ?? "", 10);
+        return !Number.isNaN(at) && Date.now() - at < OFFLINE_RETRY_MS;
+    } catch {
+        return false;
+    }
+}
+
+function markOffline(offline) {
+    try {
+        if (offline) sessionStorage.setItem("backendOfflineAt", String(Date.now()));
+        else sessionStorage.removeItem("backendOfflineAt");
+    } catch {
+        // egal
+    }
+}
+
+// fetch mit Zeitlimit; nach einem Fehlschlag wird das Backend eine Weile übersprungen
+async function backendFetch(path, options = {}, { force = false } = {}) {
+    if (!force && (backendDisabled() || isMarkedOffline())) {
+        throw new Error("Backend wird übersprungen (zuletzt nicht erreichbar)");
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), BACKEND_TIMEOUT_MS);
+    try {
+        const response = await fetch(`${getBackendUrl()}${path}`, { ...options, signal: controller.signal });
+        markOffline(false);
+        return response;
+    } catch (error) {
+        markOffline(true);
+        throw error;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 const Store = {
     offline: false,
 
     async get(key, fallback) {
         try {
-            const response = await fetch(`${getBackendUrl()}/api/data/${key}`, { cache: "no-store" });
+            const response = await backendFetch(`/api/data/${key}`, { cache: "no-store" });
             if (response.status === 204) {
                 this.setOnline(true);
                 return fallback;
@@ -47,7 +97,7 @@ const Store = {
         // lokale Kopie immer, damit bei Ausfall nichts verloren geht
         writeLocal(key, value);
         try {
-            const response = await fetch(`${getBackendUrl()}/api/data/${key}`, {
+            const response = await backendFetch(`/api/data/${key}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(value)
@@ -63,7 +113,7 @@ const Store = {
     async remove(key) {
         removeLocal(key);
         try {
-            const response = await fetch(`${getBackendUrl()}/api/data/${key}`, { method: "DELETE" });
+            const response = await backendFetch(`/api/data/${key}`, { method: "DELETE" });
             if (!response.ok) throw new Error(`Response status: ${response.status}`);
             this.setOnline(true);
         } catch (error) {
@@ -80,7 +130,8 @@ const Store = {
 
 async function testBackend() {
     try {
-        const response = await fetch(`${getBackendUrl()}/api/hallo`, { cache: "no-store" });
+        // Verbindungstest probiert es immer, auch wenn das Backend zuletzt weg war
+        const response = await backendFetch("/api/hallo", { cache: "no-store" }, { force: true });
         return response.ok;
     } catch {
         return false;

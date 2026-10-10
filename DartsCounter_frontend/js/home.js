@@ -222,6 +222,19 @@ async function getRandomBotName(taken) {
 /********* Start *********/
 
 async function start() {
+    const button = document.getElementById("start-btn");
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "Startet …";
+    try {
+        await startGame();
+    } finally {
+        button.disabled = false;
+        button.textContent = "Start";
+    }
+}
+
+async function startGame() {
     const mode = selectedMode();
     if (!mode) {
         alert("Bitte zuerst einen Spielmodus wählen.");

@@ -35,6 +35,13 @@ function showNoGame() {
     content.replaceChildren(
         h("div", { class: "empty-state" },
             h("p", { text: "Hier läuft gerade kein Spiel." }),
+            window.location.protocol === "file:"
+                ? h("p", {
+                    class: "hint",
+                    text: "Per Doppelklick geöffnet? Firefox trennt dabei den Speicher zwischen den Seiten. " +
+                        "Bitte Chrome/Edge benutzen oder die Seite über einen Webserver öffnen (z. B. VS Code Live Server)."
+                })
+                : null,
             h("button", { class: "primary-btn", text: "Zur Hauptseite", onclick: () => bar("../mainPages/index.html") }))
     );
 }
