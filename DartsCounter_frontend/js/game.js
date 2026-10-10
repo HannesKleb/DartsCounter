@@ -8,6 +8,7 @@ let settings = { ...DEFAULT_SETTINGS };
 let modifier = null;    // "D" oder "T" für den nächsten Tastatur-Dart
 let botTimer = null;
 let saveQueue = Promise.resolve();
+let previousMain = [];  // letzte angezeigte Hauptzahl pro Spieler, für die Hüpf-Animation
 
 document.addEventListener("DOMContentLoaded", initGamePage);
 
@@ -186,6 +187,8 @@ function playerCard(player, p) {
     const isCurrent = !state.finished && state.current === p;
     const view = playerView(p);
     const shownDarts = isCurrent ? state.turn : lastTurnOf(p)?.darts ?? [];
+    const changed = previousMain[p] !== undefined && previousMain[p] !== view.main;
+    previousMain[p] = view.main;
 
     return h("div", { class: `scoring-stats${isCurrent ? " current" : ""}` },
         h("div", { class: "big-scoring-stats" },
@@ -193,7 +196,7 @@ function playerCard(player, p) {
                 h("span", { text: player.name }),
                 player.bot ? h("span", { class: "badge", text: "Bot" }) : null,
                 state.legsToWin > 1 ? h("span", { class: "badge", text: `Legs ${state.legsWon[p]}` }) : null),
-            h("div", { class: "score-left", text: view.main }),
+            h("div", { class: "score-left" }, h("span", { class: changed ? "bump" : "", text: view.main })),
             view.mainLabel ? h("div", { class: "score-label", text: view.mainLabel }) : null,
             h("div", { class: "last-score" },
                 [0, 1, 2].map((i) => h("div", {

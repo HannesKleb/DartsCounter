@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     [players, games] = await Promise.all([loadKnownPlayers(), loadGames()]);
     renderPlayers();
+    animateList(document.querySelectorAll("#known-player-list .player-item"));
 });
 
 function renderPlayers() {

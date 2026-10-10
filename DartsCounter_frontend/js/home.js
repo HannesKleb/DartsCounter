@@ -3,6 +3,7 @@
 const MAX_PLAYERS = 8;
 let lobby = [];          // Spieler für das nächste Spiel
 let knownPlayers = [];
+let newPlayerIndex = null; // nur der neu hinzugefügte Spieler wird animiert
 
 document.addEventListener("DOMContentLoaded", initHome);
 
@@ -147,12 +148,13 @@ function renderLobby() {
         return;
     }
     listEl.replaceChildren(...lobby.map((player, index) =>
-        h("div", { class: "player-item" },
+        h("div", { class: `player-item${index === newPlayerIndex ? " list-in" : ""}` },
             h("span", { class: "player-index", text: `#${index + 1}` }),
             h("span", { class: "player-name", text: playerLabel(player) }),
             h("span", { class: "player-actions" },
                 h("button", { text: "↑", title: "Nach oben", disabled: index === 0, onclick: () => movePlayer(index) }),
                 h("button", { class: "delete-btn", text: "Löschen", onclick: () => removePlayer(index) })))));
+    newPlayerIndex = null;
 }
 
 function movePlayer(index) {
@@ -188,6 +190,7 @@ function addHuman() {
         return;
     }
     lobby.push({ name, bot: false });
+    newPlayerIndex = lobby.length - 1;
     input.value = "";
     saveLobby();
     renderLobby();
@@ -198,6 +201,7 @@ async function addBot() {
     const level = document.getElementById("bot-level").value;
     const name = await getRandomBotName(lobby.map((p) => p.name));
     lobby.push({ name, bot: true, level });
+    newPlayerIndex = lobby.length - 1;
     saveLobby();
     renderLobby();
 }

@@ -1,7 +1,55 @@
 /********* Gemeinsame Funktionen für alle Seiten *********/
 
 function bar(link) {
-    window.location.href = link;
+    navigate(link);
+}
+
+/********* Animationen *********/
+
+function prefersReducedMotion() {
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+// Seite weich ausblenden, dann wechseln
+function navigate(url) {
+    if (prefersReducedMotion()) {
+        window.location.href = url;
+        return;
+    }
+    document.body.classList.add("leaving");
+    setTimeout(() => { window.location.href = url; }, 180);
+}
+
+// beim Laden: Kopf, Inhalt und Leiste nacheinander einblenden
+document.addEventListener("DOMContentLoaded", () => {
+    const items = [
+        document.querySelector(".header"),
+        ...document.querySelectorAll(".content > *"),
+        document.querySelector(".bar")
+    ].filter(Boolean);
+    items.forEach((el, i) => {
+        el.classList.add("reveal");
+        el.style.setProperty("--i", Math.min(i, 8));
+    });
+    document.body.classList.add("entering");
+    setTimeout(() => document.body.classList.remove("entering"), 1600);
+});
+
+// "Zurück" im Browser zeigt die Seite aus dem Cache: Ausblenden rückgängig machen
+window.addEventListener("pageshow", () => document.body.classList.remove("leaving"));
+
+// Elemente einer Liste gestaffelt einblenden
+function animateList(elements) {
+    [...elements].forEach((el, i) => {
+        el.classList.add("list-in");
+        el.style.setProperty("--i", Math.min(i, 10));
+    });
+}
+
+function replayAnimation(el, className) {
+    el.classList.remove(className);
+    void el.offsetWidth; // Neustart der CSS-Animation erzwingen
+    el.classList.add(className);
 }
 
 // Tabs: blendet alle Panels der Gruppe aus und zeigt das gewählte
@@ -13,7 +61,10 @@ function showMode(id, group) {
     }
 
     groupEl.querySelectorAll("[data-panel]").forEach((panel) => {
-        panel.style.display = panel.id === id ? "block" : "none";
+        const show = panel.id === id;
+        const wasHidden = panel.style.display === "none";
+        panel.style.display = show ? "block" : "none";
+        if (show && wasHidden) replayAnimation(panel, "panel-in");
     });
     groupEl.querySelectorAll("button[data-target]").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.target === id);
@@ -97,5 +148,5 @@ async function startNewGame(mode, options, players) {
         darts: []
     };
     await Store.set("currentGame", game);
-    window.location.href = `../gameModes/${MODES[mode].page}`;
+    navigate(`../gameModes/${MODES[mode].page}`);
 }

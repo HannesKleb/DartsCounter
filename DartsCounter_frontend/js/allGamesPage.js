@@ -22,6 +22,7 @@ function renderGames() {
         return;
     }
     panel.replaceChildren(...games.map(gameCard));
+    animateList(panel.children);
 }
 
 function gameCard(game) {
