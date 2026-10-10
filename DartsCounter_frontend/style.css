@@ -22,26 +22,26 @@
         U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/********* Design: Glassmorphism *********/
-/* Milchglas-Karten auf weißem bzw. schwarzem Hintergrund (je nach Systemeinstellung).
-   Dahinter schweben langsam ein paar weiche Farbflächen, damit das Glas sichtbar wird. */
+/********* Design: ruhig wie apple.com *********/
+/* Hellgrauer (Hell) bzw. schwarzer (Dunkel) Hintergrund je nach Systemeinstellung,
+   darauf weiße bzw. dunkelgraue Karten mit weichem Schatten. Nur die Navigationsleiste ist Milchglas. */
 :root {
     color-scheme: light;
     --accent: #3ef0a6;            /* Mint-Grün, angelehnt an das Grün der Scheibe */
     --accent-text: #06261a;
-    --accent-glow: rgba(62, 240, 166, 0.45);
+    --accent-glow: rgba(62, 240, 166, 0.35);
     --danger: #e0244a;
-    --page-bg: #ffffff;
-    --text: #111318;
-    --muted: rgba(17, 19, 24, 0.62);
-    --glass: rgba(255, 255, 255, 0.55);
-    --glass-strong: rgba(255, 255, 255, 0.8);
-    --glass-input: rgba(17, 19, 24, 0.05);
-    --glass-border: rgba(17, 19, 24, 0.1);
-    --glass-shadow: 0 8px 32px rgba(17, 19, 24, 0.08);
-    --row-alt: rgba(17, 19, 24, 0.035);
-    --orb-opacity: 0.35;
-    --blur: blur(16px) saturate(160%);
+    --page-bg: #f5f5f7;
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --glass: #ffffff;             /* Karten */
+    --glass-strong: #e8e8ed;      /* Buttons auf Karten */
+    --glass-input: #f5f5f7;
+    --glass-border: rgba(0, 0, 0, 0.06);
+    --glass-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --row-alt: #f5f5f7;
+    --frosted: rgba(255, 255, 255, 0.72);
+    --blur: blur(20px) saturate(180%);
     --radius: 18px;
     --radius-small: 12px;
     --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -50,54 +50,23 @@
 @media (prefers-color-scheme: dark) {
     :root {
         color-scheme: dark;
-        --accent-glow: rgba(62, 240, 166, 0.4);
+        --accent-glow: rgba(62, 240, 166, 0.3);
         --danger: #ff5d7a;
         --page-bg: #000000;
-        --text: #ffffff;
-        --muted: rgba(255, 255, 255, 0.66);
-        --glass: rgba(255, 255, 255, 0.07);
-        --glass-strong: rgba(255, 255, 255, 0.14);
-        --glass-input: rgba(255, 255, 255, 0.06);
-        --glass-border: rgba(255, 255, 255, 0.14);
-        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        --row-alt: rgba(255, 255, 255, 0.04);
-        --orb-opacity: 0.32;
+        --text: #f5f5f7;
+        --muted: #a1a1a6;
+        --glass: #1c1c1e;
+        --glass-strong: #2c2c2e;
+        --glass-input: #2c2c2e;
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+        --row-alt: #232325;
+        --frosted: rgba(28, 28, 30, 0.72);
     }
 }
 html {
     min-height: 100%;
     background: var(--page-bg);
-}
-/* schwebende Farbflächen hinter dem Glas */
-body::before,
-body::after {
-    content: "";
-    position: fixed;
-    z-index: -1;
-    width: 48vmax;
-    height: 48vmax;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: var(--orb-opacity);
-    pointer-events: none;
-    animation: drift 26s ease-in-out infinite alternate;
-}
-body::before {
-    top: -18vmax;
-    left: -14vmax;
-    background: radial-gradient(circle, #8c5cff 0%, #00c2ff 60%, transparent 70%);
-}
-body::after {
-    bottom: -20vmax;
-    right: -16vmax;
-    background: radial-gradient(circle, #3ef0a6 0%, #ff4d8d 60%, transparent 70%);
-    animation-duration: 32s;
-    animation-direction: alternate-reverse;
-}
-@keyframes drift {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(12vmax, 8vmax) scale(1.15); }
-    100% { transform: translate(4vmax, 16vmax) scale(0.95); }
 }
 
 body {
@@ -163,9 +132,7 @@ option {
     color: black; /* Auswahllisten werden vom System gezeichnet */
 }
 
-/* Glas-Fläche, wird von vielen Elementen genutzt */
-.content,
-.bar,
+/* Karten */
 .scoring-stats,
 .selection-mode,
 .player-item,
@@ -179,20 +146,23 @@ option {
     background: var(--glass);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
+}
+/* Milchglas nur für schwebende Elemente (wie die Navigationsleiste bei Apple) */
+.bar {
+    background: var(--frosted);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
     -webkit-backdrop-filter: var(--blur);
     backdrop-filter: var(--blur);
 }
-/* Fallback für Browser/Geräte ohne Blur: etwas deckender, damit es lesbar bleibt */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .content, .bar, .scoring-stats, .selection-mode, .player-item, .running-game,
-    .settings-section, .game-card, .stats-table, .cricket-table, .result-box, .offline-banner {
-        background: var(--glass-strong);
+    .bar {
+        background: var(--glass);
     }
 }
 
 .content {
-    padding: 2vh 2vw;
-    border-radius: var(--radius);
+    padding: 1vh 0;
 }
 .selection {
     margin: 0.5vh auto;
@@ -557,8 +527,7 @@ option {
 }
 .scoring-stats.current {
     border: 2px solid var(--accent);
-    box-shadow: var(--glass-shadow), 0 0 28px rgba(62, 240, 166, 0.45);
-    background: var(--glass-strong);
+    box-shadow: var(--glass-shadow), 0 0 24px var(--accent-glow);
 }
 .big-scoring-stats {
     font-size: 3vh;
@@ -610,8 +579,7 @@ option {
     display: flex;
     justify-content: center;
     align-items: center;
-    -webkit-backdrop-filter: var(--blur);
-    backdrop-filter: var(--blur);
+    box-shadow: var(--glass-shadow);
 }
 .score-button-numbers button {
     width: 10vw;
@@ -676,7 +644,7 @@ option {
     z-index: 30;
 }
 .result-box {
-    background: var(--glass-strong);
+    background: var(--glass);
     animation: pop-in 0.5s var(--ease-spring) both;
     border-radius: var(--radius);
     padding: 22px 26px;
