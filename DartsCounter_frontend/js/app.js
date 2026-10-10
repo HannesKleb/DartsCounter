@@ -51,6 +51,11 @@ function animateList(elements) {
     });
 }
 
+// Platzhalter, solange Daten geladen werden
+function skeletonRows(count = 3) {
+    return [...Array(count)].map(() => h("div", { class: "skeleton" }));
+}
+
 function replayAnimation(el, className) {
     el.classList.remove(className);
     void el.offsetWidth; // Neustart der CSS-Animation erzwingen

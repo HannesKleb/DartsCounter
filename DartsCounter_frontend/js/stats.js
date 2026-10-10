@@ -146,7 +146,7 @@ const STAT_COLUMNS = {
         ["Trefferquote", (r) => fmt.pct(r.hitRate)]
     ],
     G121: [
-        ["Höchstes geschafftes Ziel", (r) => (r.best ? fmt.num(r.best) : "–")],
+        ["Höchstes geschafftes Ziel", (r) => (r.best ? fmt.num(r.best) : "-")],
         ["Erfolgsquote", (r) => fmt.pct(r.successRate)]
     ],
     FREE: [
@@ -160,15 +160,15 @@ const STAT_COLUMNS = {
 function gameStatsLine(mode, st) {
     switch (mode) {
         case "X01":
-            return `Avg ${fmt.dec(st.average)} · Höchste ${st.highest} · Checkout ${st.bestCheckout || "–"} · Legs ${st.legsWon}`;
+            return `Avg ${fmt.dec(st.average)}, höchste ${st.highest}, Checkout ${st.bestCheckout || "-"}, Legs ${st.legsWon}`;
         case "CRICKET":
-            return `MPR ${fmt.dec(st.mpr)} · Punkte ${st.points} · Legs ${st.legsWon}`;
+            return `MPR ${fmt.dec(st.mpr)}, Punkte ${st.points}, Legs ${st.legsWon}`;
         case "ATC":
-            return `Trefferquote ${fmt.pct(st.hitRate)} · ${st.darts} Darts · Legs ${st.legsWon}`;
+            return `Trefferquote ${fmt.pct(st.hitRate)}, ${st.darts} Darts, Legs ${st.legsWon}`;
         case "G121":
-            return `Bestes Ziel ${st.best || "–"} · ${st.successes}/${st.attempts} geschafft`;
+            return `Bestes Ziel ${st.best || "-"}, ${st.successes}/${st.attempts} geschafft`;
         case "FREE":
-            return `${st.total} Punkte · ${fmt.dec(st.perTurn)} pro Aufnahme`;
+            return `${st.total} Punkte, ${fmt.dec(st.perTurn)} pro Aufnahme`;
         default:
             return "";
     }

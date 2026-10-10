@@ -3,9 +3,12 @@
 let allGames = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
+    showMode("X01-games", "games");
+    document.getElementById("X01-games").replaceChildren(...skeletonRows());
+
     allGames = await loadGames();
     document.querySelector('[data-group="games"]').addEventListener("modechange", renderGames);
-    showMode("X01-games", "games");
+    renderGames();
 });
 
 function renderGames() {

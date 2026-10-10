@@ -36,15 +36,15 @@ const CRICKET_NUMBERS = [20, 19, 18, 17, 16, 15, 25];
 function describeOptions(mode, o) {
     switch (mode) {
         case "X01":
-            return `${o.start} · ${o.in === "double" ? "Double-In" : "Single-In"} · ` +
-                `${{ single: "Single-Out", double: "Double-Out", master: "Master-Out" }[o.out]} · First to ${o.legs}`;
+            return `${o.start}, ${o.in === "double" ? "Double-In" : "Single-In"}, ` +
+                `${{ single: "Single-Out", double: "Double-Out", master: "Master-Out" }[o.out]}, First to ${o.legs}`;
         case "CRICKET":
-            return `${o.variant === "cutthroat" ? "Cut Throat" : "Standard"} · ` +
-                `${o.rounds > 0 ? `max. ${o.rounds} Runden` : "ohne Rundenlimit"} · First to ${o.legs}`;
+            return `${o.variant === "cutthroat" ? "Cut Throat" : "Standard"}, ` +
+                `${o.rounds > 0 ? `max. ${o.rounds} Runden` : "ohne Rundenlimit"}, First to ${o.legs}`;
         case "ATC":
-            return `1–20${o.bull ? " + Bull" : ""}${o.multiSkip ? " · Double/Triple springen weiter" : ""} · First to ${o.legs}`;
+            return `1 bis 20${o.bull ? " + Bull" : ""}${o.multiSkip ? ", Double/Triple springen weiter" : ""}, First to ${o.legs}`;
         case "G121":
-            return `Start ${o.start} · ${o.attempts} Versuche à 9 Darts · bei Fehlschlag ${o.onFail === "down" ? "−1" : "gleiches Ziel"}`;
+            return `Start ${o.start}, ${o.attempts} Versuche à 9 Darts, bei Fehlschlag ${o.onFail === "down" ? "Ziel -1" : "gleiches Ziel"}`;
         case "FREE":
             return `${o.rounds} Runden`;
         default:

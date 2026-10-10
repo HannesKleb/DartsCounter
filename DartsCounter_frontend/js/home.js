@@ -152,7 +152,7 @@ function renderLobby() {
             h("span", { class: "player-index", text: `#${index + 1}` }),
             h("span", { class: "player-name", text: playerLabel(player) }),
             h("span", { class: "player-actions" },
-                h("button", { text: "↑", title: "Nach oben", disabled: index === 0, onclick: () => movePlayer(index) }),
+                h("button", { text: "Hoch", title: "Nach oben schieben", disabled: index === 0, onclick: () => movePlayer(index) }),
                 h("button", { class: "delete-btn", text: "Löschen", onclick: () => removePlayer(index) })))));
     newPlayerIndex = null;
 }

@@ -175,7 +175,7 @@ function renderInfo() {
     else if (game.mode === "CRICKET" && game.options.rounds > 0) parts.push(`Runde ${Math.min(state.round, game.options.rounds)}/${game.options.rounds}`);
     else if (game.mode !== "G121") parts.push(`Runde ${state.round}`);
     if (!state.finished) parts.push(`${game.players[state.current].name} ist dran`);
-    info.textContent = parts.join(" · ");
+    info.textContent = parts.join(", ");
 }
 
 function renderPlayers() {
@@ -201,7 +201,7 @@ function playerCard(player, p) {
             h("div", { class: "last-score" },
                 [0, 1, 2].map((i) => h("div", {
                     class: "last-score-field",
-                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : "–"
+                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : "-"
                 })))),
         h("div", { class: "small-scoring-stats" },
             view.lines.map((line) => h("div", { text: line }))));
@@ -225,7 +225,7 @@ function playerView(p) {
     switch (game.mode) {
         case "X01": {
             const lines = [
-                `Letzte Aufnahme: ${last ? (last.bust ? "Bust" : last.points) : "–"}`,
+                `Letzte Aufnahme: ${last ? (last.bust ? "Bust" : last.points) : "-"}`,
                 `Average: ${fmt.dec(st.average)}`
             ];
             if (!ps.opened) lines.push("Noch kein Double getroffen");
@@ -244,7 +244,7 @@ function playerView(p) {
         case "ATC": {
             const target = state.targets[ps.index];
             return {
-                main: target === undefined ? "✓" : target === 25 ? "Bull" : target,
+                main: target === undefined ? "Fertig" : target === 25 ? "Bull" : target,
                 mainLabel: "Nächstes Ziel",
                 lines: [`Geschafft: ${ps.index}/${state.targets.length}`, `Trefferquote: ${fmt.pct(st.hitRate)}`]
             };
@@ -253,18 +253,18 @@ function playerView(p) {
             const done = ps.attemptsDone >= game.options.attempts;
             const lines = done
                 ? ["Alle Versuche gemacht"]
-                : [`Ziel ${ps.target} · Versuch ${ps.attemptsDone + 1}/${game.options.attempts}`,
+                : [`Ziel ${ps.target}, Versuch ${ps.attemptsDone + 1}/${game.options.attempts}`,
                     `Aufnahme ${ps.turnInAttempt + 1}/3`];
-            lines.push(`Geschafft: ${ps.successes} · Bestes Ziel: ${ps.best || "–"}`);
+            lines.push(`Geschafft: ${ps.successes}, bestes Ziel: ${ps.best || "-"}`);
             const path = done ? null : findCheckout(ps.remaining, dartsLeft, "double");
             if (path) lines.push(`Finish: ${path.map(fieldLabel).join(" ")}`);
-            return { main: done ? "✓" : ps.remaining, lines };
+            return { main: done ? "Fertig" : ps.remaining, lines };
         }
         case "FREE":
             return {
                 main: ps.total,
                 mainLabel: "Punkte",
-                lines: [`Letzte Aufnahme: ${last ? last.points : "–"}`, `Pro Aufnahme: ${fmt.dec(st.perTurn)}`]
+                lines: [`Letzte Aufnahme: ${last ? last.points : "-"}`, `Pro Aufnahme: ${fmt.dec(st.perTurn)}`]
             };
         default:
             return { main: "", lines: [] };

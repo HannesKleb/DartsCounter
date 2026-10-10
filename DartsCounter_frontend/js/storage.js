@@ -52,7 +52,7 @@ function markOffline(offline) {
     }
 }
 
-// Beim Seitenwechsel bricht der Browser laufende Anfragen ab – das heißt nicht, dass das Backend weg ist
+// Beim Seitenwechsel bricht der Browser laufende Anfragen ab, das heißt nicht, dass das Backend weg ist
 let pageUnloading = false;
 window.addEventListener("pagehide", () => { pageUnloading = true; });
 window.addEventListener("pageshow", () => { pageUnloading = false; });
@@ -178,7 +178,7 @@ function showOfflineBanner(show) {
     banner = document.createElement("div");
     banner.id = "offline-banner";
     banner.className = "offline-banner";
-    banner.textContent = "Backend nicht erreichbar – Daten werden nur in diesem Browser gespeichert.";
+    banner.textContent = "Backend nicht erreichbar. Daten werden nur in diesem Browser gespeichert.";
     document.body.prepend(banner);
 }
 

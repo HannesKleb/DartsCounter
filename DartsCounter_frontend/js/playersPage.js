@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("new-player").addEventListener("keydown", (event) => {
         if (event.key === "Enter") addKnownPlayer();
     });
+    document.getElementById("known-player-list").replaceChildren(...skeletonRows());
     [players, games] = await Promise.all([loadKnownPlayers(), loadGames()]);
     renderPlayers();
     animateList(document.querySelectorAll("#known-player-list .player-item"));
@@ -25,7 +26,7 @@ function renderPlayers() {
         const wins = own.filter((g) => g.winner !== null && g.winner !== undefined && g.players[g.winner]?.name === player.name).length;
         return h("div", { class: "player-item" },
             h("span", { class: "player-name", text: player.name }),
-            h("span", { class: "hint", text: `${own.length} Spiele · ${wins} Siege` }),
+            h("span", { class: "hint", text: `${own.length} Spiele, ${wins} Siege` }),
             h("span", { class: "player-actions" },
                 h("button", { text: "Umbenennen", onclick: () => renamePlayer(player.name) }),
                 h("button", { class: "delete-btn", text: "Löschen", onclick: () => deletePlayer(player.name) })));

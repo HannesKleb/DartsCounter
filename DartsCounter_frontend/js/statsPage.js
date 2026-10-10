@@ -4,10 +4,13 @@ let statGames = [];
 let knownForStats = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
+    showMode("X01-stats", "stats");
+    document.getElementById("X01-stats").replaceChildren(...skeletonRows());
+
     [statGames, knownForStats] = await Promise.all([loadGames(), loadKnownPlayers()]);
     document.querySelector('[data-group="stats"]').addEventListener("modechange", renderStats);
     document.getElementById("show-bots").addEventListener("change", renderStats);
-    showMode("X01-stats", "stats");
+    renderStats();
 });
 
 function renderStats() {
