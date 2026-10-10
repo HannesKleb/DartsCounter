@@ -1,5 +1,10 @@
 /********* Gemeinsame Funktionen für alle Seiten *********/
 
+// Apple-Geräte nutzen die Systemschrift San Francisco, alle anderen Inter (siehe style.css)
+if (/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)) {
+    document.documentElement.classList.add("apple");
+}
+
 function bar(link) {
     navigate(link);
 }
