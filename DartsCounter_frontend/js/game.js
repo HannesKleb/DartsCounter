@@ -8,7 +8,9 @@ let settings = { ...DEFAULT_SETTINGS };
 let modifier = null;    // "D" oder "T" für den nächsten Tastatur-Dart
 let botTimer = null;
 let saveQueue = Promise.resolve();
-let previousMain = [];  // letzte angezeigte Hauptzahl pro Spieler, für die Hüpf-Animation
+let previousMain = [];      // letzte angezeigte Hauptzahl pro Spieler (Animation bei Änderung)
+let previousCurrent = null; // wer zuletzt dran war (Animation beim Spielerwechsel)
+let newDart = null;         // zuletzt eingegebener Dart {player, index} für die Einblend-Animation
 
 document.addEventListener("DOMContentLoaded", initGamePage);
 
@@ -51,13 +53,13 @@ function showNoGame() {
 
 function addDart(field) {
     if (!state || state.finished) return;
+    newDart = { player: state.current, index: state.turn.length };
     game.darts.push(field);
     afterChange();
 }
 
 function addHumanDart(field) {
     if (!state || state.finished || game.players[state.current].bot) return;
-    flashField(field);
     addDart(field);
 }
 
@@ -187,6 +189,8 @@ function renderInfo() {
 function renderPlayers() {
     const container = document.getElementById("players");
     container.replaceChildren(...game.players.map((player, p) => playerCard(player, p)));
+    previousCurrent = state.finished ? null : state.current;
+    newDart = null;
 }
 
 function playerCard(player, p) {
@@ -195,21 +199,24 @@ function playerCard(player, p) {
     const shownDarts = isCurrent ? state.turn : lastTurnOf(p)?.darts ?? [];
     const changed = previousMain[p] !== undefined && previousMain[p] !== view.main;
     previousMain[p] = view.main;
+    const turnStart = isCurrent && previousCurrent !== null && previousCurrent !== p;
+    const animateDartIndex = newDart?.player === p ? newDart.index : -1;
 
-    return h("div", { class: `scoring-stats${isCurrent ? " current" : ""}` },
+    return h("div", { class: `scoring-stats${isCurrent ? " current" : ""}${turnStart ? " turn-start" : ""}` },
         h("div", { class: "big-scoring-stats" },
             h("div", { class: "player-name-line" },
                 h("span", { text: player.name }),
                 player.bot ? h("span", { class: "badge", text: "Bot" }) : null,
                 state.legsToWin > 1 ? h("span", { class: "badge", text: `Legs ${state.legsWon[p]}` }) : null),
-            h("div", { class: "score-left" }, h("span", { class: changed ? "bump" : "", text: view.main })),
+            h("div", { class: "score-left" }, h("span", { class: changed ? "score-change" : "", text: view.main })),
             view.mainLabel ? h("div", { class: "score-label", text: view.mainLabel }) : null,
             h("div", { class: "last-score" },
                 [0, 1, 2].map((i) => h("div", {
-                    class: "last-score-field",
+                    class: `last-score-field${i === animateDartIndex ? " dart-in" : ""}`,
                     text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : "-"
                 })))),
         h("div", { class: "small-scoring-stats" },
+            view.finish ? h("div", { class: "finish", text: `Finish: ${view.finish}` }) : null,
             view.lines.map((line) => h("div", { text: line }))));
 }
 
@@ -235,11 +242,8 @@ function playerView(p) {
                 `Average: ${fmt.dec(st.average)}`
             ];
             if (!ps.opened) lines.push("Noch kein Double getroffen");
-            else {
-                const path = ps.score <= 170 ? findCheckout(ps.score, dartsLeft, game.options.out) : null;
-                if (path) lines.push(`Finish: ${path.map(fieldLabel).join(" ")}`);
-            }
-            return { main: ps.score, lines };
+            const path = ps.opened && ps.score <= 170 ? findCheckout(ps.score, dartsLeft, game.options.out) : null;
+            return { main: ps.score, finish: path?.map(fieldLabel).join(" "), lines };
         }
         case "CRICKET":
             return {
@@ -263,8 +267,7 @@ function playerView(p) {
                     `Aufnahme ${ps.turnInAttempt + 1}/3`];
             lines.push(`Geschafft: ${ps.successes}, bestes Ziel: ${ps.best || "-"}`);
             const path = done ? null : findCheckout(ps.remaining, dartsLeft, "double");
-            if (path) lines.push(`Finish: ${path.map(fieldLabel).join(" ")}`);
-            return { main: done ? "Fertig" : ps.remaining, lines };
+            return { main: done ? "Fertig" : ps.remaining, finish: path?.map(fieldLabel).join(" "), lines };
         }
         case "FREE":
             return {
@@ -357,17 +360,11 @@ function scheduleBot() {
 
     botTimer = setTimeout(() => {
         botTimer = null;
-        const field = simulateThrow(botTarget(state), player.level ?? settings.botLevel);
-        flashField(field);
-        addDart(field);
+        addDart(simulateThrow(botTarget(state), player.level ?? settings.botLevel));
     }, settings.botDelayMs);
 }
 
-/********* Rückmeldung *********/
-
-function flashField(field) {
-    toast(field === "M" ? "Daneben" : `${fieldLabel(field)} (${fieldValue(field)})`);
-}
+/********* Hinweise *********/
 
 let toastTimer = null;
 function toast(text) {
@@ -376,5 +373,5 @@ function toast(text) {
     el.textContent = text;
     el.classList.add("visible");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove("visible"), 900);
+    toastTimer = setTimeout(() => el.classList.remove("visible"), 1800);
 }

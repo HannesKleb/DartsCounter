@@ -15,40 +15,14 @@ function prefersReducedMotion() {
     return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }
 
-// Seite weich ausblenden, dann wechseln
+// Seitenwechsel sofort; die Überblendung macht der Browser selbst (View Transitions, siehe style.css)
 function navigate(url) {
-    if (prefersReducedMotion()) {
-        window.location.href = url;
-        return;
-    }
-    document.body.classList.add("leaving");
-    setTimeout(() => { window.location.href = url; }, 180);
+    window.location.href = url;
 }
 
-// beim Laden: Kopf, Inhalt und Leiste nacheinander einblenden
-document.addEventListener("DOMContentLoaded", () => {
-    const items = [
-        document.querySelector(".header"),
-        ...document.querySelectorAll(".content > *"),
-        document.querySelector(".bar")
-    ].filter(Boolean);
-    items.forEach((el, i) => {
-        el.classList.add("reveal");
-        el.style.setProperty("--i", Math.min(i, 8));
-    });
-    document.body.classList.add("entering");
-    setTimeout(() => document.body.classList.remove("entering"), 1600);
-});
-
-// "Zurück" im Browser zeigt die Seite aus dem Cache: Ausblenden rückgängig machen
-window.addEventListener("pageshow", () => document.body.classList.remove("leaving"));
-
-// Elemente einer Liste gestaffelt einblenden
+// Elemente einer Liste einblenden (alle gleichzeitig, keine Wartezeit durch Staffelung)
 function animateList(elements) {
-    [...elements].forEach((el, i) => {
-        el.classList.add("list-in");
-        el.style.setProperty("--i", Math.min(i, 10));
-    });
+    [...elements].forEach((el) => el.classList.add("list-in"));
 }
 
 // Platzhalter, solange Daten geladen werden

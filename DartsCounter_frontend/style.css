@@ -51,14 +51,32 @@
     --radius: 16px;
     --radius-small: 10px;
     --pill: 999px;
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Bewegung (Werte aus Material 3 / Fluent 2, siehe reports/) */
+    --dur-press: 100ms;       /* Rückmeldung auf Tippen, wirkt sofort */
+    --dur-short: 150ms;       /* kleine Elemente, Ausblenden */
+    --dur-medium: 250ms;      /* Karten, Dialoge, Tabs */
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);       /* M3 standard */
+    --ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);     /* M3 emphasized decelerate */
+    --ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);      /* M3 emphasized accelerate */
+    --ease-out: var(--ease-standard);
+    /* Größen: 8px-Raster, Typo-Skala 1.2 für die Bedienung (Basis 16px) */
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.2rem;
+    --text-xl: 1.44rem;
+    --text-2xl: 1.728rem;
+    --touch: 56px;            /* Mindestgröße Zahlentasten (Material 48, Empfehlung Darts 56-72) */
 }
 @media (prefers-color-scheme: dark) {
     :root {
         color-scheme: dark;
         --accent-soft: rgba(52, 211, 153, 0.14);
         --danger: #fb7185;
-        --page-bg: #09090b;
+        --page-bg: #111113;
         --text: #fafafa;
         --muted: #a1a1aa;
         --glass: rgba(39, 39, 42, 0.45);
@@ -91,6 +109,8 @@ html {
 }
 
 body {
+    font-size: var(--text-base);
+    line-height: 1.5;
     font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
@@ -108,17 +128,23 @@ html.apple .score-left {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Inter", sans-serif;
 }
 h1 {
-    margin: 0.3em 0;
+    font-size: var(--text-2xl);
+    line-height: 1.2;
+    margin: var(--space-1) 0;
     font-weight: 700;
     letter-spacing: -0.03em;
 }
 h2 {
-    margin: 0.2em 0 0.5em;
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    margin: 0 0 var(--space-1);
     font-weight: 600;
     letter-spacing: -0.02em;
 }
 h3 {
-    margin: 0.5em 0;
+    font-size: var(--text-lg);
+    line-height: 1.3;
+    margin: var(--space-2) 0 var(--space-1);
     font-weight: 600;
     letter-spacing: -0.015em;
 }
@@ -535,60 +561,72 @@ option {
 }
 .scoring-stats {
     border-radius: var(--radius);
-    margin: 1vh;
-    padding: 2vh 3vw;
+    margin: var(--space-1);
+    padding: var(--space-2) var(--space-3);
     text-align: center;
-    min-width: 12em;
-    transition: box-shadow 0.2s, border-color 0.2s;
+    min-width: 13em;
 }
 .scoring-stats.current {
     border: 2px solid var(--accent);
     background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass);
 }
 .big-scoring-stats {
-    font-size: 3vh;
-    margin-bottom: 1vh;
+    font-size: clamp(1.25rem, 1rem + 1.2vmin, 1.75rem);
+    margin-bottom: var(--space-1);
 }
+/* Restpunkte: aus 2-3 m lesbar. Hängt an der Bildschirmhöhe (Tablet: Ziffern ca. 20-25 mm),
+   begrenzt durch die Breite, damit 3 Ziffern in die Karte passen. Am echten Gerät nachmessen. */
 .score-left {
-    font-size: 8vh;
+    font-size: min(clamp(4rem, 1rem + 18vh, 14rem), 22vw);
     font-weight: 700;
-    letter-spacing: -0.035em;
-    line-height: 1.1;
-    margin-top: 1vh;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-top: var(--space-1);
     font-variant-numeric: tabular-nums;
 }
 .score-label {
-    font-size: 0.5em;
+    font-size: var(--text-sm);
     color: var(--muted);
-    margin-bottom: 0.5vh;
+    margin-top: 4px;
 }
 .last-score {
     display: flex;
     justify-content: center;
-    margin-top: 0.5vh;
+    gap: var(--space-1);
+    margin: var(--space-2) 0 var(--space-1);
 }
 .last-score-field {
     background: var(--glass-input);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-small);
-    margin: 0.25vw;
-    font-size: 2vh;
-    padding: 0.5vh;
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+    padding: 4px var(--space-1);
     min-width: 3em;
 }
 .small-scoring-stats {
-    font-size: 2vh;
+    font-size: clamp(0.95rem, 0.8rem + 0.6vmin, 1.2rem);
+    line-height: 1.4;
     color: var(--muted);
 }
+/* Finish-Vorschlag hervorgehoben, steht direkt unter dem Punktestand (aus Entfernung lesbar) */
+.small-scoring-stats .finish {
+    color: var(--text);
+    font-size: clamp(1.2rem, 0.8rem + 2.4vmin, 2rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 4px;
+}
 .button-board-system {
-    padding: 1vh 1vw;
+    padding: var(--space-1) 0;
 }
 .score-button table {
-    margin: 1vh auto 0;
-    border-spacing: 6px;
+    margin: var(--space-1) auto 0;
+    border-spacing: var(--space-1);
 }
 .score-button button {
-    font-size: 3vh;
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
     background: var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-small);
@@ -598,15 +636,17 @@ option {
     box-shadow: var(--glass-highlight), var(--glass-shadow);
 }
 .score-button-numbers button {
-    width: 10vw;
-    height: 8vh;
+    width: clamp(var(--touch), 10vw, 104px);
+    height: clamp(var(--touch), 8vh, 80px);
 }
 .score-button-extra button {
-    height: 8vh;
-    width: 20.4vw;
+    height: clamp(var(--touch), 8vh, 80px);
+    width: calc(2 * clamp(var(--touch), 10vw, 104px) + var(--space-1));
 }
-.score-button button:hover {
-    background: var(--glass-strong);
+@media (hover: hover) {
+    .score-button button:hover {
+        background: var(--glass-strong);
+    }
 }
 .score-button button.active {
     background: var(--accent);
@@ -680,41 +720,38 @@ option {
 }
 /* kurzes Aufleuchten des getroffenen Feldes als Rückmeldung */
 .board-field.hit {
-    animation: field-hit 0.35s ease-out;
+    animation: field-hit var(--dur-medium) var(--ease-standard);
 }
 @keyframes field-hit {
     from { fill: var(--board-hit); }
 }
 .toast {
     position: fixed;
-    top: 30%;
+    bottom: 96px;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.85);
-    filter: blur(6px);
-    background: var(--glass-strong);
+    transform: translate(-50%, 8px);
+    background: var(--glass-solid);
     border: 1px solid var(--glass-border);
-    -webkit-backdrop-filter: var(--blur);
-    backdrop-filter: var(--blur);
-    font-size: 5vh;
-    font-weight: 700;
-    padding: 1vh 4vw;
-    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    font-size: var(--text-base);
+    font-weight: 600;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--pill);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s var(--ease-out), transform 0.35s var(--ease-out), filter 0.25s var(--ease-out);
+    transition: opacity var(--dur-short) var(--ease-exit), transform var(--dur-short) var(--ease-exit);
     z-index: 20;
 }
 .toast.visible {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    filter: none;
+    transform: translate(-50%, 0);
+    transition: opacity var(--dur-medium) var(--ease-enter), transform var(--dur-medium) var(--ease-enter);
 }
 .result-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.4);
+    animation: fade-in var(--dur-short) var(--ease-standard) both;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -722,9 +759,10 @@ option {
 }
 .result-box {
     background: var(--glass);
-    animation: pop-in 0.5s var(--ease-out) both;
+    background: var(--glass-solid);
+    animation: dialog-in var(--dur-medium) var(--ease-enter) both;
     border-radius: var(--radius);
-    padding: 22px 26px;
+    padding: var(--space-3);
     max-width: 90vw;
     max-height: 85vh;
     overflow-y: auto;
@@ -732,8 +770,8 @@ option {
 .result-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 16px;
+    gap: var(--space-1);
+    margin-top: var(--space-3);
     justify-content: flex-end;
 }
 .result-buttons button, .empty-state button {
@@ -758,10 +796,10 @@ option {
     border-spacing: 0;
     border-radius: var(--radius);
     overflow: hidden;
-    font-size: 2.5vh;
+    font-size: clamp(1.1rem, 0.9rem + 1vmin, 1.6rem);
 }
 .cricket-table th, .cricket-table td {
-    padding: 0.4vh 2vw;
+    padding: 4px var(--space-3);
     text-align: center;
 }
 .cricket-table td.current {
@@ -774,63 +812,79 @@ option {
 }
 
 /********* Animationen *********/
-/* Seite blendet beim Laden gestaffelt ein: von unscharf und etwas tiefer zu scharf */
-@keyframes appear {
+/* Regeln (Recherche, siehe reports/):
+   - nur transform und opacity animieren (läuft flüssig, auch auf dem Pi), kein Blur
+   - Rückmeldung auf Tippen <= 100ms, Einblenden 150-250ms mit Abbremsen, Ausblenden kürzer
+   - was oft passiert (jeder Dart), bewegt sich am wenigsten; keine Endlos-Animationen
+   - Seitenwechsel ohne Wartezeit: Überblendung über View Transitions (Chrome/Edge/Safari),
+     andere Browser wechseln einfach sofort */
+@view-transition {
+    navigation: auto;
+}
+::view-transition-old(root) {
+    animation: var(--dur-short) var(--ease-exit) both fade-out;
+}
+::view-transition-new(root) {
+    animation: var(--dur-medium) var(--ease-enter) both fade-in;
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+}
+@keyframes fade-out {
+    to { opacity: 0; }
+}
+/* Inhalt kommt 8px von unten (Tabs, neue Listeneinträge) */
+@keyframes rise-in {
     from {
         opacity: 0;
-        transform: translateY(14px) scale(0.98);
-        filter: blur(8px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-        filter: none;
+        transform: translateY(8px);
     }
 }
-@keyframes pop-in {
+@keyframes dialog-in {
     from {
         opacity: 0;
-        transform: scale(0.9);
-        filter: blur(6px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-        filter: none;
+        transform: scale(0.96);
     }
 }
-@keyframes bump {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+/* neuer Punktestand schiebt sich kurz von unten nach */
+@keyframes score-in {
+    from {
+        opacity: 0.2;
+        transform: translateY(0.12em);
+    }
 }
-body.entering .reveal {
-    animation: appear 0.7s var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 70ms);
-}
-body.leaving {
-    opacity: 0;
-    filter: blur(6px);
-    transform: scale(0.99);
-    transition: opacity 0.18s ease-in, filter 0.18s ease-in, transform 0.18s ease-in;
+/* neuer Dart im Feld */
+@keyframes dart-in {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
 }
 .panel-in {
-    animation: appear 0.45s var(--ease-out) both;
+    animation: rise-in var(--dur-medium) var(--ease-enter) both;
 }
 .list-in {
-    animation: appear 0.5s var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 45ms);
+    animation: rise-in var(--dur-medium) var(--ease-enter) both;
 }
-.bump {
+.score-change {
     display: inline-block;
-    animation: bump 0.45s var(--ease-out);
+    animation: score-in var(--dur-medium) var(--ease-enter);
+}
+.dart-in {
+    animation: dart-in var(--dur-short) var(--ease-enter);
+}
+/* Spielerwechsel: Hervorhebung blendet weich ein */
+.scoring-stats.turn-start {
+    animation: fade-in var(--dur-medium) var(--ease-standard);
 }
 button {
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease-out);
+    transition: background-color var(--dur-short) var(--ease-standard),
+        color var(--dur-short) var(--ease-standard),
+        border-color var(--dur-short) var(--ease-standard),
+        transform var(--dur-press) var(--ease-standard);
 }
 button:active:not(:disabled) {
-    transform: scale(0.98);
-    transition-duration: 0.06s;
+    transform: scale(0.97);
 }
 
 /********* Lade-Platzhalter *********/
@@ -868,15 +922,17 @@ button:active:not(:disabled) {
     .selection-mode {
         width: 100%;
     }
-    .score-button-numbers button {
-        width: 12vw;
-        height: 7vh;
-    }
-    .score-button-extra button {
-        width: 25vw;
-    }
+    /* 7 Tasten pro Reihe über die volle Breite, Lücke 6px (8px passt am Handy nicht) */
     .score-button table {
-        border-spacing: 3px;
+        width: calc(100% + 12px);
+        margin: 0 -6px;
+        table-layout: fixed;
+        border-spacing: 6px;
+    }
+    .score-button-numbers button,
+    .score-button-extra button {
+        width: 100%;
+        height: var(--touch);
     }
     .running-game {
         flex-direction: column;
@@ -886,8 +942,18 @@ button:active:not(:disabled) {
 
 /* weniger Bewegung, falls im System eingestellt */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        transition: none !important;
-        animation: none !important;
+    /* Bewegung raus, kurze Überblendungen bleiben (sie helfen beim Verstehen) */
+    .panel-in, .list-in, .score-change, .dart-in, .result-box, .toast.visible, .toast {
+        animation-name: fade-in;
+        transform: none;
+    }
+    .toast, .toast.visible {
+        transform: translate(-50%, 0);
+    }
+    button:active:not(:disabled) {
+        transform: none;
+    }
+    .skeleton {
+        animation: none;
     }
 }
