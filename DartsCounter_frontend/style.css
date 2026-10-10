@@ -43,7 +43,12 @@
     --glass-strong: rgba(228, 228, 231, 0.7);
     --glass-input: rgba(244, 244, 245, 0.75);
     --glass-border: rgba(24, 24, 27, 0.08);
-    --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.9);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+    /* Lichtreflex auf dem Glas: Lichtpunkt oben links + schräger Glanz, macht das Glas
+       auch auf einfarbigem Hintergrund sichtbar (Annäherung an Apples Liquid Glass, kein offizielles CSS) */
+    --glass-sheen:
+        radial-gradient(120% 70% at 0% 0%, rgba(255, 255, 255, 0.7), transparent 55%),
+        linear-gradient(160deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(255, 255, 255, 0) 100%);
     --glass-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 8px 24px rgba(24, 24, 27, 0.06);
     --row-alt: rgba(24, 24, 27, 0.03);
     --frosted: rgba(250, 250, 250, 0.6);
@@ -92,7 +97,10 @@
         --glass-strong: rgba(63, 63, 70, 0.55);
         --glass-input: rgba(39, 39, 42, 0.6);
         --glass-border: rgba(250, 250, 250, 0.1);
-        --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.07);
+        --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        --glass-sheen:
+            radial-gradient(120% 70% at 0% 0%, rgba(255, 255, 255, 0.09), transparent 55%),
+            linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0) 100%);
         --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
         --row-alt: rgba(250, 250, 250, 0.03);
         --frosted: rgba(24, 24, 27, 0.6);
@@ -205,14 +213,14 @@ option {
 .result-box,
 .offline-banner,
 .bar {
-    background: var(--glass);
+    background: var(--glass-sheen), var(--glass);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-highlight), var(--glass-shadow);
     -webkit-backdrop-filter: var(--blur);
     backdrop-filter: var(--blur);
 }
 .bar {
-    background: var(--frosted);
+    background: var(--glass-sheen), var(--frosted);
 }
 
 .header,
@@ -332,9 +340,10 @@ option {
 .selection-btn button {
     padding: 0 var(--space-3);
     min-height: var(--control);
-    background: var(--glass);
+    background: var(--glass-sheen), var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
+    box-shadow: var(--glass-highlight);
 }
 @media (hover: hover) {
     .selection-btn button:hover {
@@ -410,7 +419,8 @@ option {
     padding: 0 var(--space-2);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
-    background: var(--glass-strong);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
 }
 .player-input {
     margin-top: var(--space-2);
@@ -427,7 +437,8 @@ option {
 .input-btn {
     min-height: var(--control);
     padding: 0 var(--space-2);
-    background: var(--glass-strong);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
 }
@@ -483,7 +494,8 @@ option {
 .player-item button {
     min-height: var(--control);
     padding: 0 var(--space-2);
-    background: var(--glass-strong);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
 }
@@ -591,7 +603,8 @@ option {
 }
 .back-btn button {
     padding: 6px 14px;
-    background: var(--glass-strong);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
 }
@@ -614,7 +627,7 @@ option {
 }
 .scoring-stats.current {
     border: 2px solid var(--accent);
-    background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass);
+    background: var(--glass-sheen), linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass);
 }
 .big-scoring-stats {
     font-size: clamp(1.25rem, 1rem + 1.2vmin, 1.75rem);
@@ -673,7 +686,7 @@ option {
 .score-button button {
     font-size: var(--text-xl);
     font-variant-numeric: tabular-nums;
-    background: var(--glass);
+    background: var(--glass-sheen), var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-small);
     display: flex;
@@ -804,8 +817,7 @@ option {
     z-index: 30;
 }
 .result-box {
-    background: var(--glass);
-    background: var(--glass-solid);
+    background: var(--glass-sheen), var(--glass-solid);
     animation: dialog-in var(--dur-medium) var(--ease-enter) both;
     border-radius: var(--radius);
     padding: var(--space-3);
@@ -824,7 +836,8 @@ option {
     border: 1px solid var(--glass-border);
     border-radius: var(--pill);
     padding: 10px 16px;
-    background: var(--glass-strong);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
 }
 .empty-state {
     text-align: center;
