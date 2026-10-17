@@ -60,10 +60,14 @@ Angemeldete Anfragen schicken `Authorization: Bearer <token>`. Fehler kommen als
 
 `account` = `{id, name, role, createdAt}`. Statuscodes: 400 ungültige Eingabe, 401 nicht angemeldet oder falscher Code, 403 kein Admin, 404 Konto nicht gefunden, 409 Regelverstoß (Name vergeben, letzter Admin, eigenes Konto löschen), 429 zu viele Fehlversuche.
 
-### Zugriff auf `/api/data` (Spieler, Spiele, Einstellungen)
+### Zugriff von außen
 
-- **Im Heimnetz:** frei, Spielen ohne Konto geht wie bisher.
-- **Über den Cloudflare Tunnel:** Lesen und Schreiben nur mit Anmeldung (jedes Konto, egal ob Admin oder Spieler). Ohne Anmeldung kommt 401, das Frontend speichert dann nur im Browser und zeigt einen Hinweis.
-- Erkannt wird der Tunnel am Header `CF-Connecting-IP`, den Cloudflare an jede Anfrage aus dem Internet hängt. Geprüft wird nur, ob es ihn gibt, die IP wird nicht gelesen oder gespeichert.
-- Einstellbar über `dartscounter.data.require-login` in `application.properties`: `tunnel` (Standard), `always` oder `never`.
-- Nicht geschützt sind `/api/auth/*` (Anmeldung muss erreichbar sein), `/api/hallo` und die Kamera-Endpunkte unter `/services`.
+- **Im Heimnetz:** alles frei, Spielen ohne Konto geht wie bisher.
+- **Von außen:** `/api/data` (Spieler, Spiele, Einstellungen) nur mit Anmeldung, egal ob Admin oder Spieler. Die Kamera-Endpunkte `/services` nur für Admins. Ohne Anmeldung kommt 401, das Frontend speichert dann nur im Browser und zeigt einen Hinweis.
+- Als „von außen“ zählt eine Anfrage, wenn
+  - sie den Header `CF-Connecting-IP` hat (Cloudflare Tunnel; cloudflared selbst verbindet sich von 127.0.0.1), oder
+  - die Absender-Adresse keine Heimnetz-Adresse ist (z. B. bei einer Portweiterleitung im Router).
+  - Heimnetz-Adressen sind Loopback, 10.x, 172.16–31.x, 192.168.x, link-local und IPv6 fc00::/7.
+  - Die Adresse wird nur für diese Prüfung angesehen, nie gespeichert oder geloggt.
+- Einstellbar in `application.properties` über `dartscounter.data.require-login` und `dartscounter.services.require-login`: `tunnel` (Standard), `always` oder `never`.
+- Nicht geschützt sind `/api/auth/*` (die Anmeldung muss erreichbar sein) und `/api/hallo`.

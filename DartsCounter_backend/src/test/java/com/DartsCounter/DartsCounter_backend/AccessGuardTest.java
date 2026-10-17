@@ -26,9 +26,9 @@ import org.springframework.web.context.WebApplicationContext;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// /api/data: im Heimnetz frei, über den Tunnel (CF-Connecting-IP vorhanden) nur mit Anmeldung
+// /api/data und /services: im Heimnetz frei, von außen nur mit Anmeldung
 @SpringBootTest
-class DataAccessTest {
+class AccessGuardTest {
 
     @TempDir
     static Path dataDir;
@@ -43,19 +43,19 @@ class DataAccessTest {
     WebApplicationContext context;
 
     MockMvc mvc;
-    static String playerToken;
+    static String adminToken;
 
-    private static final String TUNNEL = DataAccessInterceptor.TUNNEL_HEADER;
+    private static final String TUNNEL = AccessGuard.TUNNEL_HEADER;
 
     @BeforeEach
     void setUp() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(context).build();
-        if (playerToken == null) {
+        if (adminToken == null) {
             JsonMapper json = JsonMapper.builder().build();
             JsonNode admin = json.readTree(mvc.perform(post("/api/auth/setup").contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Hannes\"}")).andReturn().getResponse().getContentAsString());
             String body = json.writeValueAsString(java.util.Map.of("name", "Hannes", "code", admin.get("code").asString()));
-            playerToken = json.readTree(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+            adminToken = json.readTree(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
                     .andReturn().getResponse().getContentAsString()).get("token").asString();
         }
     }
@@ -81,7 +81,7 @@ class DataAccessTest {
 
     @Test
     void tunnelWorksWithLogin() throws Exception {
-        String bearer = "Bearer " + playerToken;
+        String bearer = "Bearer " + adminToken;
         mvc.perform(put("/api/data/settings").header(TUNNEL, "203.0.113.5").header("Authorization", bearer)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"botLevel\":\"hard\"}")).andExpect(status().isNoContent());
         mvc.perform(get("/api/data/settings").header(TUNNEL, "203.0.113.5").header("Authorization", bearer))
@@ -102,5 +102,50 @@ class DataAccessTest {
         mvc.perform(get("/api/data/players").header(TUNNEL, "203.0.113.5").header("Origin", "https://darts.example.org"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
+    }
+
+    @Test
+    void foreignAddressNeedsLoginWithoutTunnelHeader() throws Exception {
+        // z. B. Portweiterleitung im Router: kein Cloudflare-Header, aber öffentliche Adresse
+        mvc.perform(get("/api/data/players").with(r -> { r.setRemoteAddr("203.0.113.5"); return r; }))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/data/players").with(r -> { r.setRemoteAddr("192.168.178.20"); return r; }))
+                .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    void servicesFromOutsideOnlyForAdmins() throws Exception {
+        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+        mvc.perform(post("/services/post/1")).andExpect(status().isOk()); // Heimnetz
+    }
+
+    @Test
+    void servicesForbiddenForPlayersFromOutside() throws Exception {
+        JsonMapper json = JsonMapper.builder().build();
+        String created = mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Kai\",\"role\":\"player\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String code = json.readTree(created).get("code").asString();
+        String body = json.writeValueAsString(java.util.Map.of("name", "Kai", "code", code));
+        String token = json.readTree(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andReturn().getResponse().getContentAsString()).get("token").asString();
+        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Nur für Admins."));
+    }
+
+    @Test
+    void homeNetworkAddresses() {
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("127.0.0.1"));
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("10.0.0.7"));
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("172.20.1.1"));
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("::1"));
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("fd12:3456::1"));
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("fe80::1"));
+        org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("8.8.8.8"));
+        org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("172.32.0.1"));
+        org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("2001:db8::1"));
     }
 }
