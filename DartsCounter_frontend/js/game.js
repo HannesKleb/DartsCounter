@@ -133,6 +133,7 @@ function initKeyboard() {
     document.querySelectorAll("[data-number]").forEach((btn) => {
         btn.addEventListener("click", () => pressNumber(parseInt(btn.dataset.number, 10)));
     });
+    document.getElementById("single-btn").addEventListener("click", () => toggleModifier(null));
     document.getElementById("double-btn").addEventListener("click", () => toggleModifier("D"));
     document.getElementById("triple-btn").addEventListener("click", () => toggleModifier("T"));
     document.getElementById("undo-btn").addEventListener("click", undo);
@@ -143,9 +144,15 @@ function toggleModifier(type) {
     updateModifierButtons();
 }
 
+// Single/Double/Triple: genau einer ist aktiv; die Zahlentasten zeigen den Wert mit (siehe style.css)
 function updateModifierButtons() {
-    document.getElementById("double-btn")?.classList.toggle("active", modifier === "D");
-    document.getElementById("triple-btn")?.classList.toggle("active", modifier === "T");
+    for (const [id, type] of [["single-btn", null], ["double-btn", "D"], ["triple-btn", "T"]]) {
+        const btn = document.getElementById(id);
+        btn?.classList.toggle("active", modifier === type);
+        btn?.setAttribute("aria-pressed", String(modifier === type));
+    }
+    const keys = document.getElementById("score-button-id");
+    if (keys) keys.dataset.mod = modifier ?? "";
 }
 
 function pressNumber(number) {
@@ -204,6 +211,8 @@ function initBoard() {
         aim = null;
         renderAim();
     });
+    document.querySelector(".board-miss")?.addEventListener("click", () => addHumanDart("M"));
+    document.querySelector(".board-undo")?.addEventListener("click", undo);
 }
 
 function moveAim(event) {
@@ -248,25 +257,35 @@ function renderAim() {
     lens.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
 }
 
-// Darts der laufenden (oder gerade beendeten) Aufnahme genau an ihrer Stelle einzeichnen
+// Darts der laufenden Aufnahme genau an ihrer Stelle als nummerierte Punkte;
+// ist die Aufnahme gerade vorbei, bleibt die letzte blass stehen
 function renderBoardMarks() {
     if (!boardSvg) return;
-    const turnDarts = state.turn.length > 0 ? state.turn.length : state.turns.at(-1)?.darts.length ?? 0;
+    const current = state.turn.length > 0 || state.finished;
+    const turnDarts = current ? state.turn.length : state.turns.at(-1)?.darts.length ?? 0;
     const points = dartPoints();
     const first = game.darts.length - turnDarts;
+    const seen = {};
     const marks = [];
     for (let i = first; i < game.darts.length; i++) {
         const field = game.darts[i];
-        const point = points[i] ?? (field === "M" ? null : fieldCenter(field));
-        if (!point) continue;
+        let point = points[i];
+        if (!point) {
+            if (field === "M") continue;
+            // ohne Position (Tastatur): Feldmitte, gleiches Feld mehrfach daneben setzen
+            const center = fieldCenter(field);
+            seen[field] = (seen[field] ?? -1) + 1;
+            point = { x: center.x + seen[field] * 20, y: center.y };
+        }
         const isNew = i === game.darts.length - 1 && newDart !== null;
-        marks.push(svgEl("g", { class: `board-mark${isNew ? " mark-in" : ""}`, transform: `translate(${point.x} ${point.y})` }));
-        marks.at(-1).append(
-            svgEl("circle", { r: 11, class: "board-mark-dot" }),
-            svgEl("text", { class: "board-mark-num", y: 0.5 }));
-        marks.at(-1).lastChild.textContent = i - first + 1;
+        const mark = svgEl("g", { class: `board-pin${isNew ? " mark-in" : ""}`, transform: `translate(${point.x} ${point.y})` });
+        const label = svgEl("text", { class: "board-mark-number", y: 0.5 });
+        label.textContent = i - first + 1;
+        mark.append(svgEl("circle", { r: 10, class: "board-mark" }), label);
+        marks.push(mark);
     }
-    document.querySelectorAll(".board-marks").forEach((group, n) => {
+    document.querySelectorAll("#board .board-marks").forEach((group, n) => {
+        group.setAttribute("class", `board-marks${current ? "" : " old"}`);
         group.replaceChildren(...(n === 0 ? marks : marks.map((m) => m.cloneNode(true))));
     });
 }
@@ -320,11 +339,16 @@ function playerCard(player, p) {
             view.mainLabel ? h("div", { class: "score-label", text: view.mainLabel }) : null,
             h("div", { class: "last-score" },
                 [0, 1, 2].map((i) => h("div", {
-                    class: `last-score-field${i === animateDartIndex ? " dart-in" : ""}`,
-                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : "-"
+                    class: `last-score-field${shownDarts[i] === undefined ? " empty" : ""}${i === animateDartIndex ? " dart-in" : ""}`,
+                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : ""
                 })))),
         h("div", { class: "small-scoring-stats" },
-            view.finish ? h("div", { class: "finish", text: `Finish: ${view.finish}` }) : null,
+            view.finish ? h("div", { class: "finish" },
+                h("span", { class: "finish-label", text: "Finish" }),
+                view.finish.map((field) => h("span", {
+                    class: `finish-chip${field[0] === "D" ? " double" : ""}`,
+                    text: fieldLabel(field)
+                }))) : null,
             view.lines.map((line) => h("div", { text: line }))));
 }
 
@@ -351,7 +375,7 @@ function playerView(p) {
             ];
             if (!ps.opened) lines.push("Noch kein Double getroffen");
             const path = ps.opened && ps.score <= 170 ? findCheckout(ps.score, dartsLeft, game.options.out) : null;
-            return { main: ps.score, finish: path?.map(fieldLabel).join(" "), lines };
+            return { main: ps.score, finish: path, lines };
         }
         case "CRICKET":
             return {
@@ -375,7 +399,7 @@ function playerView(p) {
                     `Aufnahme ${ps.turnInAttempt + 1}/3`];
             lines.push(`Geschafft: ${ps.successes}, bestes Ziel: ${ps.best || "-"}`);
             const path = done ? null : findCheckout(ps.remaining, dartsLeft, "double");
-            return { main: done ? "Fertig" : ps.remaining, finish: path?.map(fieldLabel).join(" "), lines };
+            return { main: done ? "Fertig" : ps.remaining, finish: path, lines };
         }
         case "FREE":
             return {

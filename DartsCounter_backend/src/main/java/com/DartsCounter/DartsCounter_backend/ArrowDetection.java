@@ -18,6 +18,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.video.BackgroundSubtractor;
 import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.VideoWriter;
 import org.opencv.videoio.Videoio;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -73,6 +74,8 @@ public class ArrowDetection {
             System.out.println("Kamera " + (camera + 1) + " nicht erreichbar: " + source);
             return;
         }
+        // MJPG vor der Auflösung setzen: drei unkomprimierte 1080p-Kameras passen nicht durch die USB-Bandbreite des Pi
+        capture.set(Videoio.CAP_PROP_FOURCC, VideoWriter.fourcc('M', 'J', 'P', 'G'));
         capture.set(Videoio.CAP_PROP_FRAME_WIDTH, widthPx);
         capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, heightPx);
         System.out.println("Kamera " + (camera + 1) + ": " + capture.get(Videoio.CAP_PROP_FRAME_WIDTH) + "x"

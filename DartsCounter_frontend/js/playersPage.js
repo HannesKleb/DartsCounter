@@ -25,8 +25,9 @@ function renderPlayers() {
         const own = games.filter((g) => g.players.some((p) => p.name === player.name && !p.bot));
         const wins = own.filter((g) => g.winner !== null && g.winner !== undefined && g.players[g.winner]?.name === player.name).length;
         return h("div", { class: "player-item" },
+            avatar(player),
             h("span", { class: "player-name", text: player.name }),
-            h("span", { class: "hint", text: `${own.length} Spiele, ${wins} Siege` }),
+            h("span", { class: "hint", text: `${own.length} ${own.length === 1 ? "Spiel" : "Spiele"}, ${wins} ${wins === 1 ? "Sieg" : "Siege"}` }),
             h("span", { class: "player-actions" },
                 h("button", { text: "Umbenennen", onclick: () => renamePlayer(player.name) }),
                 h("button", { class: "delete-btn", text: "Löschen", onclick: () => deletePlayer(player.name) })));

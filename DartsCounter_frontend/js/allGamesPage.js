@@ -30,7 +30,7 @@ function renderGames() {
 
 function gameCard(game) {
     const s = replayGame(game);
-    const winner = s.winner === null ? "Unentschieden" : `Sieger: ${game.players[s.winner].name}`;
+    const winner = s.winner === null ? "Unentschieden" : `${game.players[s.winner].name} gewinnt`;
 
     const details = h("div", { class: "game-details", hidden: true },
         h("div", { class: "hint", text: describeOptions(game.mode, game.options) }),
@@ -44,9 +44,9 @@ function gameCard(game) {
             class: "game-card-head",
             onclick: () => { details.hidden = !details.hidden; }
         },
-            h("span", { text: formatDate(game.finishedAt ?? game.startedAt) }),
-            h("span", { text: game.players.map((p) => p.name).join(", ") }),
-            h("strong", { text: winner })),
+            h("span", { class: "game-card-players", text: game.players.map((p) => p.name).join(" · ") }),
+            h("span", { class: "game-card-date", text: formatDate(game.finishedAt ?? game.startedAt) }),
+            h("span", { class: "game-card-winner", text: winner })),
         details);
 }
 
