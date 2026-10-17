@@ -1013,11 +1013,6 @@ button:active:not(:disabled) {
     min-height: var(--control);
     justify-self: start;
 }
-.demo-hint {
-    max-width: 65ch;
-    margin: var(--space-3) auto 0;
-    text-align: center;
-}
 .account-row .player-name {
     display: flex;
     align-items: center;
