@@ -946,6 +946,141 @@ button:active:not(:disabled) {
     transform: scale(0.97);
 }
 
+/********* Konten *********/
+.header {
+    position: relative;
+}
+.user-menu {
+    position: absolute;
+    top: var(--space-1);
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+.user-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control);
+    padding: 0 var(--space-2);
+    border-radius: var(--pill);
+    background: var(--glass-sheen), var(--glass);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight);
+    font-weight: 600;
+}
+.auth-box {
+    max-width: 30rem;
+    margin: var(--space-3) auto 0;
+}
+.account-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-2);
+    align-items: end;
+}
+.auth-box .account-form {
+    grid-template-columns: 1fr;
+}
+.account-form label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--muted);
+    max-width: none;
+}
+.account-form input, .account-form select {
+    color: var(--text);
+}
+#login-code {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.form-error {
+    min-height: 1.5em;
+    margin: 0;
+    color: var(--danger);
+    font-weight: 600;
+}
+.link-btn {
+    background: none;
+    border: none;
+    padding: var(--space-1) 0;
+    color: var(--muted);
+    text-decoration: underline;
+    min-height: var(--control);
+    justify-self: start;
+}
+.demo-hint {
+    max-width: 65ch;
+    margin: var(--space-3) auto 0;
+    text-align: center;
+}
+.account-row .player-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+.account-row select {
+    min-width: 7rem;
+}
+/* Zugangskarte */
+.access-card {
+    margin-top: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+.access-card-print {
+    align-self: flex-start;
+    min-width: min(100%, 22rem);
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    border: 2px solid var(--accent);
+    background: var(--glass-sheen), var(--accent-soft), var(--glass);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+.access-card-title {
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+}
+.access-label {
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.access-name {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+}
+.access-code {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    user-select: all;
+}
+@media print {
+    body.print-access-card * {
+        visibility: hidden;
+    }
+    body.print-access-card .access-card.printing .access-card-print,
+    body.print-access-card .access-card.printing .access-card-print * {
+        visibility: visible;
+    }
+    body.print-access-card .access-card.printing .access-card-print {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #fff;
+        color: #000;
+        border: 2px solid #000;
+        box-shadow: none;
+    }
+}
+
 /********* Lade-Platzhalter *********/
 .skeleton {
     height: 44px;
@@ -1001,6 +1136,12 @@ button:active:not(:disabled) {
     .running-game {
         flex-direction: column;
         align-items: flex-start;
+    }
+    /* Konto-Anzeige unter den Titel statt daneben */
+    .user-menu {
+        position: static;
+        margin-bottom: var(--space-1);
+        flex-wrap: wrap;
     }
 }
 

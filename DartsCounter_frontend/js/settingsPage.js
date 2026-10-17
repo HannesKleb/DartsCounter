@@ -26,7 +26,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("delete-players").addEventListener("click", deleteAllPlayers);
 
     updateBackendStatus();
+    renderAccountSection();
+    document.addEventListener("authchange", renderAccountSection);
 });
+
+function renderAccountSection() {
+    const user = Auth.current();
+    document.getElementById("account-status").textContent = user
+        ? `Angemeldet als ${user.name} (${ACCOUNT_ROLES[user.role]}).`
+        : "Nicht angemeldet. Spielen geht auch ohne Konto.";
+    const actions = [];
+    if (user?.role === "admin") actions.push(h("button", { class: "input-btn", text: "Konten verwalten", onclick: () => bar("accounts.html") }));
+    if (user) {
+        actions.push(h("button", {
+            class: "input-btn", text: "Abmelden",
+            onclick: () => {
+                Auth.logout();
+                renderUserMenu();
+                renderAccountSection();
+            }
+        }));
+    } else {
+        actions.push(h("button", { class: "input-btn primary-btn", text: "Anmelden", onclick: () => bar("login.html") }));
+    }
+    document.getElementById("account-actions").replaceChildren(...actions);
+}
 
 async function updateBackendStatus() {
     const status = document.getElementById("backend-status");

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../style.css">
     <script src="../js/storage.js" defer></script>
     <script src="../js/app.js" defer></script>
+    <script src="../js/accounts.js" defer></script>
     <script src="../js/settingsPage.js" defer></script>
 </head>
 <body>
@@ -17,6 +18,11 @@
         </div>
     </div>
     <div class="content settings">
+        <section class="settings-section">
+            <h3>Konto</h3>
+            <p class="hint" id="account-status"></p>
+            <div class="settings-row" id="account-actions"></div>
+        </section>
         <section class="settings-section">
             <h3>Verbindung</h3>
             <label>Backend-Adresse (leer = automatisch)

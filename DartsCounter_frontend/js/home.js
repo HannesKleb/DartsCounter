@@ -138,7 +138,10 @@ function saveLobby() {
 
 function renderKnownPlayers() {
     const list = document.getElementById("known-players");
-    list.replaceChildren(...knownPlayers.map((p) => h("option", { value: p.name })));
+    // bekannte Spieler und Spielernamen der Konten als Vorschläge
+    const names = new Set(knownPlayers.map((p) => p.name));
+    if (typeof Auth !== "undefined") Auth.accountNames().forEach((name) => names.add(name));
+    list.replaceChildren(...[...names].map((name) => h("option", { value: name })));
 }
 
 function renderLobby() {

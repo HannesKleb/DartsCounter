@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darts Counter</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/accounts.js" defer></script>
+    <script src="../js/accountsPage.js" defer></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Darts Counter</h1>
+        <div class="page">
+            <h2>Konten</h2>
+        </div>
+    </div>
+    <div class="content" id="accounts-content">
+        <section class="settings-section" id="create-section">
+            <h3>Konto erstellen</h3>
+            <p class="hint">Nur ein Spielername, keine E-Mail und kein echter Name. Die App erzeugt einen Zugangscode, den du weitergibst.</p>
+            <form id="create-form" class="account-form">
+                <label>Spielername
+                    <input type="text" id="new-account-name" maxlength="16" autocomplete="off" required>
+                </label>
+                <label>Rolle
+                    <select id="new-account-role">
+                        <option value="player" selected>Spieler</option>
+                        <option value="admin">Admin (darf Konten verwalten)</option>
+                    </select>
+                </label>
+                <button type="submit" class="input-btn primary-btn">Konto erstellen</button>
+            </form>
+            <p class="form-error" id="create-error" role="alert"></p>
+            <div id="new-card"></div>
+        </section>
+        <section class="settings-section">
+            <h3>Alle Konten</h3>
+            <div id="account-list"></div>
+            <p class="form-error" id="list-error" role="alert"></p>
+        </section>
+        <p class="hint demo-hint">Demo-Modus: Konten liegen nur in diesem Browser und sind noch nicht geschützt.
+            Für echte Konten kommt später das Backend dazu.</p>
+    </div>
+    <div class="bar">
+        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
+    </div>
+</body>
+</html>
