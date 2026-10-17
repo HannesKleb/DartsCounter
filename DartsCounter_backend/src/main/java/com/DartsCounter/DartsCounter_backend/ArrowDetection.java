@@ -42,6 +42,7 @@ public class ArrowDetection {
     private final int heightPx;
     private final int fps;
     private final int processWidth;
+    private final int stableFrames;
     private final boolean saveFrames;
 
     @Autowired
@@ -50,18 +51,20 @@ public class ArrowDetection {
                           @Value("${dartscounter.camera.height-px}") int heightPx,
                           @Value("${dartscounter.camera.fps:15}") int fps,
                           @Value("${dartscounter.detection.process-width:640}") int processWidth,
+                          @Value("${dartscounter.detection.stable-frames:3}") int stableFrames,
                           @Value("${dartscounter.debug.save-frames:false}") boolean saveFrames) {
         this.collector = collector;
         this.widthPx = widthPx;
         this.heightPx = heightPx;
         this.fps = fps;
         this.processWidth = processWidth;
+        this.stableFrames = stableFrames;
         this.saveFrames = saveFrames;
     }
 
     // für Tests
     ArrowDetection(ThrowCollector collector, int widthPx, int heightPx, boolean saveFrames) {
-        this(collector, widthPx, heightPx, 15, widthPx, saveFrames);
+        this(collector, widthPx, heightPx, 15, widthPx, 3, saveFrames);
     }
 
     /** @return true, wenn neu gestartet; false, wenn die Erkennung schon lief */
@@ -112,7 +115,7 @@ public class ArrowDetection {
         Size blurSize = null;
         double toCameraPx = 1; // verkleinerte Spalte -> Spalte im Kamerabild
         int frameCount = 0;
-        boolean dartVisible = false;
+        DartDebouncer debouncer = null;
 
         try {
             while (running.get() && capture.read(frame)) {
@@ -124,28 +127,31 @@ public class ArrowDetection {
                     work = small;
                 }
                 if (kernel == null) {
-                    // Filtergrößen wie bei 1920 px, passend verkleinert
+                    // Filtergrößen wie bei 1920 px, passend verkleinert, aber nie so klein, dass Rauschen durchkommt
                     double k = work.cols() / REFERENCE_WIDTH;
-                    blurSize = new Size(Math.max(3, Math.round(7 * k)), Math.max(3, Math.round(7 * k)));
-                    long side = Math.max(3, Math.round(10 * k));
+                    long blur = Math.max(5, Math.round(7 * k));
+                    blurSize = new Size(blur, blur);
+                    long side = Math.max(5, Math.round(10 * k));
                     kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(side, side));
+                    // 2 s Anlaufzeit für die Hintergrund-Erkennung, Toleranz 2 % der Bildbreite
+                    debouncer = new DartDebouncer(stableFrames, Math.max(3, fps / 3), fps * 2, frame.cols() * 0.02);
                 }
                 backSub.apply(work, fgMask);
-                if (frameCount % 2 == 0) {
-                    // enhance IMG
-                    Imgproc.blur(fgMask, fgMaskBlur, blurSize);
-                    Imgproc.morphologyEx(fgMaskBlur, fgCleaned, Imgproc.MORPH_OPEN, kernel);
+                // Schatten (Grauwert 127) und unsichere Pixel verwerfen, nur echte Bewegung (255) behalten
+                Imgproc.threshold(fgMask, fgMask, 200, 255, Imgproc.THRESH_BINARY);
+                Imgproc.blur(fgMask, fgMaskBlur, blurSize);
+                Imgproc.morphologyEx(fgMaskBlur, fgCleaned, Imgproc.MORPH_OPEN, kernel);
+                Imgproc.threshold(fgCleaned, fgCleaned, 127, 255, Imgproc.THRESH_BINARY);
 
-                    Double dartX = showsDarts(fgCleaned);
-                    if (dartX != null) dartX *= toCameraPx;
-                    // nur melden, wenn der Pfeil neu auftaucht, nicht in jedem Frame
-                    if (dartX != null && !dartVisible) collector.report(camera, dartX);
-                    dartVisible = dartX != null;
+                Double dartX = showsDarts(fgCleaned);
+                if (dartX != null) dartX *= toCameraPx;
+                // erst melden, wenn der Pfeil ein paar Bilder lang ruhig an derselben Stelle steckt
+                Double report = debouncer.update(dartX);
+                if (report != null) collector.report(camera, report);
 
-                    if (saveFrames) {
-                        String folder = dartX != null ? "arrow" : "empty";
-                        Imgcodecs.imwrite("subFrames/" + folder + "/mask_frame_" + frameCount + "_" + camera + ".png", fgCleaned);
-                    }
+                if (saveFrames && frameCount % 2 == 0) {
+                    String folder = dartX != null ? "arrow" : "empty";
+                    Imgcodecs.imwrite("subFrames/" + folder + "/mask_frame_" + frameCount + "_" + camera + ".png", fgCleaned);
                 }
                 frameCount++;
             }
