@@ -897,6 +897,7 @@ option {
 }
 .last-score-field {
     min-width: 44px;
+    min-height: 1.5em;
     padding: 2px 8px;
     border-radius: var(--radius-chip);
     background: var(--surface-3);
@@ -1059,7 +1060,8 @@ option {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--space-1);
 }
-.score-button button {
+.score-button button,
+.board-actions button {
     position: relative;
     height: var(--key);
     min-width: 0;
@@ -1077,14 +1079,17 @@ option {
     gap: 6px;
 }
 @media (hover: hover) {
-    .score-button button:hover {
+    .score-button button:hover,
+    .board-actions button:hover {
         background: var(--surface-4);
     }
 }
-.score-button [data-number="0"] {
-    color: var(--text-2);
+.score-button [data-number="0"],
+.board-miss {
+    color: var(--text-2) !important;
 }
-.score-button .undo-btn {
+.score-button .undo-btn,
+.board-actions .undo-btn {
     background: transparent;
     border: 1px solid var(--line-strong);
     font-family: var(--font);
@@ -1135,6 +1140,32 @@ option {
 }
 .score-board {
     text-align: center;
+}
+.board-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1);
+    margin-top: 12px;
+}
+/* geworfene Darts: weißer Punkt mit Nummer, gut auf Rot, Grün, Schwarz und Creme */
+.board-mark {
+    fill: var(--text);
+    stroke: var(--bg);
+    stroke-width: 3;
+}
+.board-mark-number {
+    fill: var(--bg);
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+.board-marks {
+    pointer-events: none;
+}
+.board-marks.old {
+    opacity: 0.45;
 }
 
 /* Dartscheibe in den echten Farben: schwarz/creme, Ringe rot/grün */

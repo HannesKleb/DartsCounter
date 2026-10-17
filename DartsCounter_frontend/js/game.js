@@ -161,6 +161,32 @@ function initBoard() {
         if (target?.classList.contains("board-field")) replayAnimation(target, "hit");
         addHumanDart(field);
     });
+    document.querySelector(".board-miss")?.addEventListener("click", () => addHumanDart("M"));
+    document.querySelector(".board-undo")?.addEventListener("click", undo);
+}
+
+// Darts der laufenden Aufnahme als nummerierte Punkte auf der Scheibe;
+// ist die Aufnahme gerade vorbei, bleibt die letzte blass stehen
+function renderBoardMarks() {
+    const svg = document.querySelector("#board .board-svg");
+    if (!svg) return;
+    svg.querySelector(".board-marks")?.remove();
+    const current = state.turn.length > 0 || state.finished;
+    const darts = current ? state.turn : state.turns.at(-1)?.darts ?? [];
+    const group = svgEl("g", { class: `board-marks${current ? "" : " old"}` });
+    const seen = {};
+    darts.forEach((field, i) => {
+        if (field === "M") return;
+        const { x, y } = fieldCenter(field);
+        seen[field] = (seen[field] ?? -1) + 1; // gleiches Feld mehrfach: daneben setzen
+        const cx = (x + seen[field] * 26).toFixed(1);
+        const cy = y.toFixed(1);
+        group.append(svgEl("circle", { cx, cy, r: 16, class: "board-mark" }));
+        const label = svgEl("text", { x: cx, y: cy, class: "board-mark-number" });
+        label.textContent = i + 1;
+        group.append(label);
+    });
+    svg.append(group);
 }
 
 function fieldFromScreen(element, clientX, clientY) {
@@ -178,6 +204,7 @@ function render() {
     renderInfo();
     renderPlayers();
     if (game.mode === "CRICKET") renderCricketBoard();
+    renderBoardMarks();
     renderResult();
     scheduleBot();
 }

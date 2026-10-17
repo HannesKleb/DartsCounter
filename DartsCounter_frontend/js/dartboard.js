@@ -205,6 +205,20 @@ function svgEl(tag, attrs) {
     return el;
 }
 
+// Mitte eines Feldes, für die Markierung geworfener Darts (Single: äußerer Single-Ring)
+function fieldCenter(field) {
+    const R = BOARD_RADIUS;
+    if (field === "DB") return { x: 0, y: 0 };
+    if (field === "SB") return { x: 0, y: -(R.innerBull + R.outerBull) / 2 };
+    const radius = {
+        S: (R.tripleOuter + R.doubleInner) / 2,
+        D: (R.doubleInner + R.doubleOuter) / 2,
+        T: (R.tripleInner + R.tripleOuter) / 2
+    }[field[0]];
+    const angle = BOARD_NUMBERS.indexOf(fieldNumber(field)) * 18 * Math.PI / 180;
+    return { x: radius * Math.sin(angle), y: -radius * Math.cos(angle) };
+}
+
 function createBoardSvg() {
     const R = BOARD_RADIUS;
     const svg = svgEl("svg", {
