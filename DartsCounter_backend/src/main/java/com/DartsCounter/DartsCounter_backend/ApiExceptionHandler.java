@@ -8,8 +8,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-// gilt nur für die Konten-Endpunkte, /api/data bleibt wie bisher
-@RestControllerAdvice(assignableTypes = {AuthController.class, AccountController.class})
+// gilt für Konten, Kameras und Kalibrierung; /api/data bleibt wie bisher
+@RestControllerAdvice(assignableTypes = {AuthController.class, AccountController.class, ServiceController.class})
 public class ApiExceptionHandler {
 
     @ExceptionHandler(ApiException.class)

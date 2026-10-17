@@ -13,7 +13,7 @@ Automatischer Darts-Zähler für den Raspberry Pi: 3 Kameras erkennen den Pfeil,
   - `js/stats.js` – Statistiken
   - `js/accounts.js` – Konten und Anmeldung (über das Backend, Demo-Modus als Ersatz)
 - `DartsCounter_backend/` – Spring Boot (Java 25): Kameras/Pfeilerkennung, Datenspeicher und Konten
-- `dart_tracking.py`, `DartTracking.java` – Triangulation aus 3 Kamerawinkeln
+- `dart_tracking.py`, `DartTracking.java` – erste Versuche zur Triangulation (ersetzt durch `CameraModel`/`Triangulator` im Backend)
 - `3D-models/` – Kamerahalterungen
 - `cpFolder*.sh` – Kopieren zwischen Rechner und Pi
 
@@ -109,3 +109,42 @@ ingress:
 - Prüfen: `cloudflared tunnel ingress validate` und `cloudflared tunnel ingress rule https://darts.deine-domain.de/api/hallo` (muss die Backend-Regel treffen).
 - Neu starten nach Änderungen: `sudo systemctl restart cloudflared`, Status mit `systemctl status cloudflared`.
 - Eine eigene Backend-Adresse lässt sich in den Einstellungen eintragen. Leer lassen ist der Normalfall.
+
+## Pfeilerkennung und Kalibrierung
+
+Ablauf im Backend: Jede Kamera meldet die Pixelspalte, in der ein neuer Pfeil auftaucht (`ArrowDetection`). Meldungen innerhalb von 400 ms gehören zum selben Wurf (`ThrowCollector`). Aus den Spalten von mindestens zwei Kameras wird der Treffpunkt berechnet (`Triangulator`) und daraus das Feld (`BoardGeometry`, Feld-Codes wie im Frontend: `S20`, `D20`, `T20`, `SB`, `DB`, `M`).
+
+### Kalibrieren
+
+Ohne Kalibrierung rechnet das Backend nur mit der geplanten Montage aus `application.properties` (`dartscounter.camera.*`). Schon wenige Grad oder Millimeter Abweichung kosten dann über 1 cm Genauigkeit. Deshalb einmal nach dem Aufbau (und nach jedem Verstellen einer Kamera) kalibrieren:
+
+1. Kalibrierung starten. Die Kameras starten automatisch mit.
+2. Einen Pfeil werfen und warten, bis „Wurf erkannt“ erscheint.
+3. Auf der Scheibe im Frontend genau die Stelle anklicken, an der der Pfeil steckt.
+4. Pfeil herausziehen. Wird das Herausziehen als Wurf erkannt: „Verwerfen“.
+5. Wiederholen: mindestens 8 Würfe, besser 15–20, über die ganze Scheibe verteilt (innen, außen, alle Seiten).
+6. Fertig. Das Backend zeigt den mittleren und den größten Fehler in mm an.
+
+Jede Kamera bekommt dabei ein eigenes Modell (5 Zahlen: Position, Blickrichtung, Brennweite und Bildmitte auf einmal). Gespeichert wird es in `calibration.json` im Datenordner. In der Simulation (Klick ca. 1 mm, Erkennung ca. 1,5 px ungenau) liegt der mittlere Fehler bei 8 Würfen um 1,7 mm, bei 15 Würfen um 1,0 mm.
+
+| Methode | Pfad | Body | Antwort |
+|---|---|---|---|
+| GET | `/services/calibration` | – | Status |
+| POST | `/services/calibration/start` | – | Status (alte Kalibrierwürfe werden verworfen, die gespeicherte Kalibrierung bleibt bis „Fertig“) |
+| POST | `/services/calibration/point` | `{x, y}` in mm wie im Frontend (x rechts, y unten, Ursprung Bullseye) | Status |
+| POST | `/services/calibration/skip` | – | Status (erkannten Wurf verwerfen) |
+| POST | `/services/calibration/undo` | – | Status (letzten Klick zurücknehmen) |
+| POST | `/services/calibration/finish` | – | Status, oder 409 mit Meldung (zu wenige oder zu ähnliche Würfe) |
+| POST | `/services/calibration/cancel` | – | Status |
+| GET | `/services/lastHit` | – | `{id, field, score, x, y, calibrated, timestamp}` oder 204 |
+
+Status: `{active, calibrated, createdAt, errorMm, maxErrorMm, samples, minSamples, recommendedSamples, pendingCameras, cameras: [{camera, samples, rmsPx, calibrated}]}`. `pendingCameras` ist gesetzt, solange ein erkannter Wurf auf den Klick wartet.
+
+### Testen ohne Scheibe, Kameras und Pi
+
+- `./mvnw test` prüft alles mit simulierten Kameras: Erkennung auf künstlichen Bildern, Kalibrierung mit absichtlich falsch montierten Kameras, ganzer Ablauf über HTTP.
+- Mit `dartscounter.detection.simulate=true` kann man Kameras von Hand spielen:
+  - `POST /services/test/detection {camera, pixelX}` meldet eine Erkennung.
+  - `POST /services/test/flush` schließt den Wurf sofort ab.
+  - So lässt sich die Kalibrier-Seite im Frontend ohne Hardware durchklicken.
+- Statt eines Kamera-Index kann in `dartscounter.cameras` auch der Pfad zu einer Videodatei stehen. So lassen sich echte Aufnahmen wieder abspielen.

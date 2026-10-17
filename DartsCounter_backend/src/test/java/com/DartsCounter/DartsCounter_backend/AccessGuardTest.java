@@ -115,10 +115,10 @@ class AccessGuardTest {
 
     @Test
     void servicesFromOutsideOnlyForAdmins() throws Exception {
-        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5")).andExpect(status().isUnauthorized());
-        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + adminToken))
+        mvc.perform(get("/services/calibration").header(TUNNEL, "203.0.113.5")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/services/calibration").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
-        mvc.perform(post("/services/post/1")).andExpect(status().isOk()); // Heimnetz
+        mvc.perform(get("/services/calibration")).andExpect(status().isOk()); // Heimnetz
     }
 
     @Test
@@ -131,7 +131,7 @@ class AccessGuardTest {
         String body = json.writeValueAsString(java.util.Map.of("name", "Kai", "code", code));
         String token = json.readTree(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andReturn().getResponse().getContentAsString()).get("token").asString();
-        mvc.perform(post("/services/post/1").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + token))
+        mvc.perform(get("/services/calibration").header(TUNNEL, "203.0.113.5").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Nur für Admins."));
     }
