@@ -147,5 +147,9 @@ class AccessGuardTest {
         org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("8.8.8.8"));
         org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("172.32.0.1"));
         org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("2001:db8::1"));
+        // öffentliche IPv6-Adresse im selben Netz wie der Pi (z. B. 2003:… bei der Telekom) gehört zum Heimnetz
+        org.junit.jupiter.api.Assertions.assertTrue(AccessGuard.isHomeNetwork("2003:e5:1234:5600::10", "2003:e5:1234:5600::77"));
+        org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("2003:e5:9999:1::10", "2003:e5:1234:5600::77"));
+        org.junit.jupiter.api.Assertions.assertFalse(AccessGuard.isHomeNetwork("8.8.8.8", "2003:e5:1234:5600::77"));
     }
 }
