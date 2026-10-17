@@ -1,10 +1,10 @@
 Felder der Dartscheibe (passend zu dartboard.svg und js/dartboard.js)
 Winkel: 0° = oben (Mitte der 20), im Uhrzeigersinn
-Radius: normiert, 1 = Außenrand der Scheibe (225 mm)
+Radius: normiert, 1 = Außenrand der Scheibe (225 mm). Double 162-170 mm, Triple 99-107 mm, Bull 6,35 / 15,9 mm
 
 Field Angle   Radius
 
-S1   9-27     0.07066667-0.44 / 0.47555556-0.75555556
+S1   9-27     0.07066667-0.44 / 0.47555556-0.72
 S2   135-153  "
 S3   171-189  "
 S4   45-63    "
@@ -25,7 +25,7 @@ S18  27-45    "
 S19  189-207  "
 S20  351-9    "
 
-D1   9-27     0.75555556-0.79111111
+D1   9-27     0.72-0.75555556
 D2   135-153  "
 D3   171-189  "
 D4   45-63    "

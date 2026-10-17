@@ -1088,6 +1088,184 @@ button:active:not(:disabled) {
     }
 }
 
+/********* Kalibrierung *********/
+.calib-error {
+    margin: 0 0 var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    border: 1px solid var(--danger);
+    background: var(--glass-sheen), var(--glass);
+    color: var(--danger);
+    font-weight: 600;
+}
+.calib-steps {
+    margin: 0;
+    padding-left: 1.4em;
+    max-width: 65ch;
+    line-height: 1.6;
+}
+.calib-prompt {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-sheen), var(--glass);
+    box-shadow: var(--glass-highlight);
+    font-size: var(--text-lg);
+}
+/* Wurf erkannt: deutlich hervorheben */
+.calib-prompt.detected {
+    border: 2px solid var(--accent);
+    background: var(--glass-sheen), linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass);
+    animation: fade-in var(--dur-medium) var(--ease-standard);
+}
+.calib-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-2);
+    font-variant-numeric: tabular-nums;
+}
+.calib-cameras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+}
+.calib-cam {
+    padding: 4px var(--space-2);
+    border-radius: var(--pill);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-strong);
+    font-size: var(--text-sm);
+}
+.calib-cam.seen {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 700;
+}
+.calib-warnings {
+    margin: 0;
+    padding: var(--space-1) var(--space-2) var(--space-1) 2em;
+    border-radius: var(--radius);
+    background: rgba(255, 196, 0, 0.14);
+    border: 1px solid rgba(255, 196, 0, 0.55);
+}
+.calib-board-wrap {
+    position: relative;
+    margin: var(--space-1) auto;
+    width: min(100%, 60vh);
+}
+.calib-board {
+    width: 100%;
+}
+.calib-svg {
+    cursor: default;
+}
+/* Wurf erkannt: Scheibe antippbar, kein Scrollen beim Ziehen */
+.calib-svg.selectable {
+    cursor: crosshair;
+    touch-action: none;
+}
+.calib-svg .board-field:hover {
+    opacity: 1;
+}
+.calib-dot {
+    fill: var(--accent);
+    stroke: #09090b;
+    stroke-width: 0.8;
+}
+.calib-marker-ring {
+    fill: rgba(52, 211, 153, 0.18);
+    stroke: #fafafa;
+    stroke-width: 1.6;
+}
+.calib-marker-line {
+    stroke: #fafafa;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}
+.calib-marker {
+    filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.9));
+    pointer-events: none;
+}
+/* Lupe: vergrößerter Ausschnitt um die Markierung */
+.calib-lens {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--accent);
+    background: var(--glass-solid);
+    box-shadow: var(--glass-shadow), 0 8px 24px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    z-index: 5;
+}
+.calib-lens svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.calib-lens-cross {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(#fafafa, #fafafa) center / 1.5px 40% no-repeat,
+        linear-gradient(#fafafa, #fafafa) center / 40% 1.5px no-repeat;
+    filter: drop-shadow(0 0 1px #000);
+}
+.calib-fine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1) var(--space-2);
+}
+.calib-fine .hint {
+    flex-basis: 100%;
+    text-align: center;
+}
+.calib-nudge {
+    display: flex;
+    gap: var(--space-1);
+}
+.calib-actions {
+    justify-content: center;
+}
+.calib-verdict {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin: 0;
+}
+.calib-verdict.good { color: var(--accent); }
+.calib-verdict.ok { color: #f59e0b; }
+.calib-verdict.bad { color: var(--danger); }
+.calib-figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-2);
+}
+.calib-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    background: var(--glass-sheen), var(--glass-strong);
+    box-shadow: var(--glass-highlight);
+}
+.calib-figure strong {
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
+}
+.calib-tips {
+    margin: 0;
+    padding-left: 1.4em;
+}
+
 /********* Lade-Platzhalter *********/
 .skeleton {
     height: 44px;

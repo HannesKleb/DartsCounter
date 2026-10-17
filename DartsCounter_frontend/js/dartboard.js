@@ -3,16 +3,19 @@
 // Zahlen im Uhrzeigersinn, beginnend oben
 const BOARD_NUMBERS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 
-// Radien in mm, passend zu resources/dartboard.svg
+// Radien in mm einer Steeldartscheibe (Außenkante Double 170 mm), gleiche Werte wie BoardGeometry im Backend.
+// board = ganze Scheibe mit Zahlenring (451 mm Durchmesser)
 const BOARD_RADIUS = {
     innerBull: 6.35,
     outerBull: 15.9,
     tripleInner: 99,
     tripleOuter: 107,
-    doubleInner: 170,
-    doubleOuter: 178,
+    doubleInner: 162,
+    doubleOuter: 170,
     board: 225.5
 };
+// Zahlen mittig im Ring zwischen Double und Scheibenrand
+const NUMBER_RADIUS = (BOARD_RADIUS.doubleOuter + BOARD_RADIUS.board) / 2;
 
 // Feld-Codes: "S20" Single, "D20" Double, "T20" Triple, "SB" Bull (25), "DB" Bullseye (50), "M" daneben
 function fieldValue(field) {
@@ -233,8 +236,8 @@ function createBoardSvg() {
             }));
         }
         const label = svgEl("text", {
-            x: (200 * Math.sin(i * 18 * Math.PI / 180)).toFixed(1),
-            y: (-200 * Math.cos(i * 18 * Math.PI / 180)).toFixed(1),
+            x: (NUMBER_RADIUS * Math.sin(i * 18 * Math.PI / 180)).toFixed(1),
+            y: (-NUMBER_RADIUS * Math.cos(i * 18 * Math.PI / 180)).toFixed(1),
             class: "board-number"
         });
         label.textContent = number;

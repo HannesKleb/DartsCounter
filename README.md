@@ -118,12 +118,16 @@ Ablauf im Backend: Jede Kamera meldet die Pixelspalte, in der ein neuer Pfeil au
 
 Ohne Kalibrierung rechnet das Backend nur mit der geplanten Montage aus `application.properties` (`dartscounter.camera.*`). Schon wenige Grad oder Millimeter Abweichung kosten dann über 1 cm Genauigkeit. Deshalb einmal nach dem Aufbau (und nach jedem Verstellen einer Kamera) kalibrieren:
 
+Im Frontend: **Einstellungen → Kameras → „Kameras kalibrieren“** (`mainPages/calibration.html`). Im Heimnetz frei, von außen nur für Admins.
+
 1. Kalibrierung starten. Die Kameras starten automatisch mit.
 2. Einen Pfeil werfen und warten, bis „Wurf erkannt“ erscheint.
-3. Auf der Scheibe im Frontend genau die Stelle anklicken, an der der Pfeil steckt.
+3. Auf der Scheibe im Frontend genau die Stelle anklicken, an der der Pfeil steckt. Die Markierung lässt sich ziehen oder mit den Pfeiltasten bzw. den Knöpfen in 1-mm-Schritten verschieben, eine Lupe zeigt die Stelle vergrößert. Erst „Position bestätigen“ schickt den Punkt.
 4. Pfeil herausziehen. Wird das Herausziehen als Wurf erkannt: „Verwerfen“.
 5. Wiederholen: mindestens 8 Würfe, besser 15–20, über die ganze Scheibe verteilt (innen, außen, alle Seiten).
-6. Fertig. Das Backend zeigt den mittleren und den größten Fehler in mm an.
+6. Fertig. Das Backend zeigt den mittleren und den größten Fehler in mm an. Bewertung im Frontend: bis 2 mm „sehr gut“, bis 4 mm „brauchbar“, darüber „neu kalibrieren“.
+
+Die Seite zeigt bisherige Klicks als Punkte, warnt bei fehlenden Bereichen (innen, außen, Seiten) und wenn eine Kamera den Pfeil deutlich seltener sieht. Maße der Scheibe in Frontend und Backend: Double 162–170 mm, Triple 99–107 mm, Bull 6,35 / 15,9 mm.
 
 Jede Kamera bekommt dabei ein eigenes Modell (5 Zahlen: Position, Blickrichtung, Brennweite und Bildmitte auf einmal). Gespeichert wird es in `calibration.json` im Datenordner. In der Simulation (Klick ca. 1 mm, Erkennung ca. 1,5 px ungenau) liegt der mittlere Fehler bei 8 Würfen um 1,7 mm, bei 15 Würfen um 1,0 mm.
 

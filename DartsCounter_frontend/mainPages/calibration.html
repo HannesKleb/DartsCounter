@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darts Counter</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/dartboard.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/accounts.js" defer></script>
+    <script src="../js/calibrationPage.js" defer></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Darts Counter</h1>
+        <div class="page">
+            <h2>Kameras kalibrieren</h2>
+        </div>
+    </div>
+    <div class="content calibration">
+        <p class="calib-error" id="calib-error" role="alert" hidden></p>
+
+        <!-- Ergebnis (nach "Fertig") -->
+        <section class="settings-section" id="calib-result" hidden></section>
+
+        <!-- Übersicht ohne laufende Kalibrierung -->
+        <section class="settings-section" id="calib-intro" hidden>
+            <h3>Stand</h3>
+            <div id="calib-state"></div>
+            <h3>So geht's</h3>
+            <ol class="calib-steps">
+                <li>Starte die Kalibrierung, die Kameras laufen dann automatisch.</li>
+                <li>Wirf einen Pfeil und warte, bis „Wurf erkannt“ erscheint.</li>
+                <li>Tippe auf der Scheibe genau die Stelle an, an der der Pfeil steckt, richte die Markierung mit der Lupe aus und bestätige.</li>
+                <li>Zieh den Pfeil heraus. Wird das als Wurf erkannt, tippe auf „Verwerfen“.</li>
+                <li>Wiederhole das 15 bis 20 Mal über die ganze Scheibe verteilt und tippe dann auf „Fertig“.</li>
+            </ol>
+            <div class="settings-row">
+                <button class="input-btn primary-btn" id="start-btn">Kalibrierung starten</button>
+            </div>
+        </section>
+
+        <!-- Laufende Kalibrierung -->
+        <section class="settings-section" id="calib-run" hidden>
+            <div class="calib-prompt" id="calib-prompt" aria-live="polite"></div>
+            <div class="calib-progress">
+                <span id="calib-count"></span>
+                <span class="calib-cameras" id="calib-cameras"></span>
+            </div>
+            <ul class="calib-warnings" id="calib-warnings"></ul>
+
+            <div class="calib-board-wrap" id="calib-board-wrap">
+                <div class="board calib-board" id="calib-board"></div>
+                <div class="calib-lens" id="calib-lens" hidden aria-hidden="true"></div>
+            </div>
+
+            <div class="calib-fine" id="calib-fine" hidden>
+                <span class="hint" id="calib-position"></span>
+                <div class="calib-nudge" role="group" aria-label="Markierung um 1 mm verschieben">
+                    <button class="input-btn" data-nudge="0,-1" aria-label="1 mm nach oben">Hoch</button>
+                    <button class="input-btn" data-nudge="-1,0" aria-label="1 mm nach links">Links</button>
+                    <button class="input-btn" data-nudge="1,0" aria-label="1 mm nach rechts">Rechts</button>
+                    <button class="input-btn" data-nudge="0,1" aria-label="1 mm nach unten">Runter</button>
+                </div>
+                <button class="input-btn primary-btn" id="confirm-btn">Position bestätigen</button>
+            </div>
+
+            <div class="settings-row calib-actions">
+                <button class="input-btn" id="skip-btn">Verwerfen</button>
+                <button class="input-btn" id="undo-btn">Rückgängig</button>
+                <button class="input-btn primary-btn" id="finish-btn">Fertig</button>
+                <button class="danger-btn" id="cancel-btn">Abbrechen</button>
+            </div>
+        </section>
+
+    </div>
+    <div class="bar">
+        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
+        <button class="bar-btn-active" id="settings" onclick="bar('settings.html')">Einstellungen</button>
+    </div>
+</body>
+</html>

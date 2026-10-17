@@ -376,11 +376,11 @@ window.addEventListener("online", () => {
 });
 
 // Kamera-Endpunkte (/services): von außen nur für Admins; Meldung aus {"message"} als Fehler
-async function servicesFetch(path, options = {}) {
+async function servicesFetch(path, options = {}, { timeoutMs = BACKEND_TIMEOUT_MS } = {}) {
     const response = await backendFetch(`/services${path}`, {
         ...options,
         headers: dataHeaders(options.headers ?? {})
-    }, { force: true });
+    }, { force: true, timeoutMs });
     if (response.status === 401 || response.status === 403) {
         let message = response.status === 401 ? "Bitte anmelden." : "Nur für Admins.";
         try {
