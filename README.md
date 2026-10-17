@@ -19,6 +19,8 @@ Automatischer Darts-Zähler für den Raspberry Pi: 3 Kameras erkennen den Pfeil,
 
 ## Starten
 
+Schritt-für-Schritt-Anleitung für den Raspberry Pi (Einrichten, Updates, Fehlerhilfe): [ANLEITUNG-PI.md](ANLEITUNG-PI.md)
+
 1. Backend: im Ordner `DartsCounter_backend` `./mvnw spring-boot:run` (läuft auf Port 8080)
 2. Frontend: Ordner `DartsCounter_frontend` über einen Webserver ausliefern (auf dem Pi `/var/www/html`, lokal z. B. VS Code Live Server) und `mainPages/index.html` öffnen
 
