@@ -21,6 +21,22 @@ function setBackendUrl(url) {
     }
 }
 
+// Anmelde-Token (wird von accounts.js gesetzt); über den Tunnel braucht /api/data eine Anmeldung
+const AUTH_TOKEN_KEY = "authToken";
+
+function readAuthToken() {
+    try {
+        return localStorage.getItem(AUTH_TOKEN_KEY);
+    } catch {
+        return null;
+    }
+}
+
+function dataHeaders(extra = {}) {
+    const token = readAuthToken();
+    return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
 const BACKEND_TIMEOUT_MS = 2500;    // länger wird nicht gewartet
 const OFFLINE_RETRY_MS = 30000;     // so lange nach einem Fehlschlag nicht erneut versuchen
 
@@ -81,7 +97,8 @@ const Store = {
 
     async get(key, fallback) {
         try {
-            const response = await backendFetch(`/api/data/${key}`, { cache: "no-store" });
+            const response = await backendFetch(`/api/data/${key}`, { cache: "no-store", headers: dataHeaders() });
+            if (response.status === 401) return this.needLogin(key, readLocal(key, fallback));
             if (response.status === 204) {
                 this.setOnline(true);
                 return fallback;
@@ -104,9 +121,10 @@ const Store = {
         try {
             const response = await backendFetch(`/api/data/${key}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: dataHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify(value)
             });
+            if (response.status === 401) return this.needLogin(key);
             if (!response.ok) throw new Error(`Response status: ${response.status}`);
             this.setOnline(true);
         } catch (error) {
@@ -118,7 +136,8 @@ const Store = {
     async remove(key) {
         removeLocal(key);
         try {
-            const response = await backendFetch(`/api/data/${key}`, { method: "DELETE" });
+            const response = await backendFetch(`/api/data/${key}`, { method: "DELETE", headers: dataHeaders() });
+            if (response.status === 401) return this.needLogin(key);
             if (!response.ok) throw new Error(`Response status: ${response.status}`);
             this.setOnline(true);
         } catch (error) {
@@ -130,6 +149,14 @@ const Store = {
     setOnline(online) {
         this.offline = !online;
         showOfflineBanner(!online);
+    },
+
+    // Backend ist da, will aber eine Anmeldung (Zugriff über das Internet)
+    needLogin(key, value) {
+        console.warn(`Backend verlangt Anmeldung (${key})`);
+        this.offline = true;
+        showOfflineBanner(true, "login");
+        return value;
     }
 };
 
@@ -168,18 +195,21 @@ function removeLocal(key) {
     }
 }
 
-function showOfflineBanner(show) {
+function showOfflineBanner(show, reason = "offline") {
     let banner = document.getElementById("offline-banner");
     if (!show) {
         banner?.remove();
         return;
     }
-    if (banner) return;
-    banner = document.createElement("div");
-    banner.id = "offline-banner";
-    banner.className = "offline-banner";
-    banner.textContent = "Backend nicht erreichbar. Daten werden nur in diesem Browser gespeichert.";
-    document.body.prepend(banner);
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "offline-banner";
+        banner.className = "offline-banner";
+        document.body.prepend(banner);
+    }
+    banner.textContent = reason === "login"
+        ? "Von unterwegs nur mit Anmeldung. Bis dahin werden Daten nur in diesem Browser gespeichert."
+        : "Backend nicht erreichbar. Daten werden nur in diesem Browser gespeichert.";
 }
 
 /********* Einstellungen *********/

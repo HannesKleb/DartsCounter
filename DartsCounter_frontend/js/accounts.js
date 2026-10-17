@@ -13,7 +13,8 @@
 //   POST   /api/accounts/{id}/code                    -> {code}            (nur Admin)
 //   PATCH  /api/accounts/{id}           {role}       -> account           (nur Admin)
 //   DELETE /api/accounts/{id}                         -> 204               (nur Admin)
-// Das Token liegt in localStorage und geht als "Authorization: Bearer <token>" mit.
+// Das Token liegt in localStorage und geht als "Authorization: Bearer <token>" mit (auch bei /api/data,
+// das über den Cloudflare Tunnel nur mit Anmeldung geht).
 //
 // DEMO-MODUS: Nur wenn das Backend nicht erreichbar ist. Dann liegen die Konten nur in diesem Browser
 // (localStorage). Das ist NICHT sicher (jeder mit Zugriff auf den Browser kann sie ändern).
@@ -134,8 +135,6 @@ function nameTaken(list, name, exceptId = null) {
 
 /********* Backend oder Demo-Modus *********/
 
-const TOKEN_KEY = "authToken";
-
 // wird pro Seite einmal entschieden, damit nicht mitten im Ablauf zwischen zwei Speichern gewechselt wird
 let accountsModePromise = null;
 
@@ -174,17 +173,13 @@ function showDemoBanner() {
 }
 
 function readToken() {
-    try {
-        return localStorage.getItem(TOKEN_KEY);
-    } catch {
-        return null;
-    }
+    return readAuthToken(); // aus storage.js
 }
 
 function writeToken(token) {
     try {
-        if (token) localStorage.setItem(TOKEN_KEY, token);
-        else localStorage.removeItem(TOKEN_KEY);
+        if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+        else localStorage.removeItem(AUTH_TOKEN_KEY);
     } catch {
         // egal
     }

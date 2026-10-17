@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-// CORS steht in WebConfig
+// CORS und Zugriffsschutz (DataAccessInterceptor) stehen in WebConfig
 public class DataController {
     private final DataStore dataStore;
 
