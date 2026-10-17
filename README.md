@@ -114,7 +114,7 @@ ingress:
 
 ## Pfeilerkennung und Kalibrierung
 
-Ablauf im Backend: Jede Kamera meldet die Pixelspalte, in der ein neuer Pfeil auftaucht (`ArrowDetection`). Meldungen innerhalb von 400 ms gehören zum selben Wurf (`ThrowCollector`). Aus den Spalten von mindestens zwei Kameras wird der Treffpunkt berechnet (`Triangulator`) und daraus das Feld (`BoardGeometry`, Feld-Codes wie im Frontend: `S20`, `D20`, `T20`, `SB`, `DB`, `M`).
+Ablauf im Backend: Jede Kamera sucht in ihren Bildern Pfeilspitzen (`DartFrameProcessor`), verfolgt sie über mehrere Bilder und meldet einen Pfeil, sobald seine Spitze ruhig an einer Stelle steckt (`DartTracker`). Meldungen innerhalb von 1,2 s gehören zum selben Wurf, eine zweite Meldung derselben Kamera beginnt einen neuen (`ThrowCollector`). Aus den Spalten von mindestens zwei Kameras wird der Treffpunkt berechnet (`Triangulator`) und daraus das Feld (`BoardGeometry`, Feld-Codes wie im Frontend: `S20`, `D20`, `T20`, `SB`, `DB`, `M`).
 
 ### Kalibrieren
 

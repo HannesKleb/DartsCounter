@@ -48,6 +48,12 @@ public record CameraModel(double a, double b, double c, double d, double e) {
     /** Modell aus mindestens MIN_SAMPLES Würfen; null, wenn die Würfe zu ähnlich liegen. */
     public static CameraModel fit(List<Sample> samples) {
         if (samples.size() < MIN_SAMPLES) return null;
+        return solve(samples);
+    }
+
+    // Ausgleichsrechnung ohne Mindestanzahl (ab 5 Würfen lösbar)
+    private static CameraModel solve(List<Sample> samples) {
+        if (samples.size() < 5) return null;
         // Gleichung je Wurf: a·x + b·y + c − p·x·d − p·y·e = p  (in skalierten Einheiten)
         double[][] ata = new double[5][5];
         double[] atb = new double[5];
@@ -64,6 +70,47 @@ public record CameraModel(double a, double b, double c, double d, double e) {
         // zurück in mm und Pixel
         return new CameraModel(SCALE_PX * k[0] / SCALE_MM, SCALE_PX * k[1] / SCALE_MM, SCALE_PX * k[2],
                 k[3] / SCALE_MM, k[4] / SCALE_MM);
+    }
+
+    /** Ergebnis einer Kalibrierung mit Ausreißer-Prüfung: Modell und die Würfe, die dafür benutzt wurden */
+    public record Fit(CameraModel model, List<Sample> used, int discarded) {}
+
+    /**
+     * Wie fit(), wirft aber einzelne Würfe raus, die gar nicht passen (falsch angeklickt oder falscher Pfeil erkannt).
+     * Verfahren (RANSAC): viele Modelle aus zufälligen kleinen Gruppen von Würfen rechnen und das nehmen, zu dem die
+     * meisten Würfe passen (höchstens 12 Pixel daneben). Mit diesen Würfen wird das Modell neu berechnet.
+     * Passen weniger als 70 % der Würfe, wird nichts verworfen (dann sind die Daten insgesamt zu ungenau).
+     */
+    public static Fit fitRobust(List<Sample> samples) {
+        CameraModel all = fit(samples);
+        if (all == null) return null;
+        final double inlierPx = 12;
+        java.util.Random random = new java.util.Random(42); // gleiche Daten, gleiches Ergebnis
+        int n = samples.size(), subset = 6;
+        List<Sample> best = samples;
+        int bestCount = countWithin(all, samples, inlierPx);
+        for (int iter = 0; iter < 400; iter++) {
+            List<Sample> pick = new java.util.ArrayList<>(samples);
+            java.util.Collections.shuffle(pick, random);
+            CameraModel m = solve(pick.subList(0, subset));
+            if (m == null) continue;
+            int count = countWithin(m, samples, inlierPx);
+            if (count > bestCount) {
+                bestCount = count;
+                List<Sample> inliers = new java.util.ArrayList<>();
+                for (Sample s : samples) if (Math.abs(m.pixel(s.x(), s.y()) - s.pixel()) <= inlierPx) inliers.add(s);
+                best = inliers;
+            }
+        }
+        if (best.size() < MIN_SAMPLES || best.size() < 0.7 * n) return new Fit(all, samples, 0);
+        CameraModel model = fit(best);
+        return model == null ? new Fit(all, samples, 0) : new Fit(model, best, n - best.size());
+    }
+
+    private static int countWithin(CameraModel m, List<Sample> samples, double px) {
+        int c = 0;
+        for (Sample s : samples) if (Math.abs(m.pixel(s.x(), s.y()) - s.pixel()) <= px) c++;
+        return c;
     }
 
     /**

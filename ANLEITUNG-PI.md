@@ -19,7 +19,7 @@ Beim Eintippen von Passwörtern erscheint nichts auf dem Bildschirm. Das ist nor
 3. [Einmalig: Pi vorbereiten](#3-einmalig-pi-vorbereiten)
 4. [Backend aufspielen und als Dienst einrichten](#4-backend-aufspielen-und-als-dienst-einrichten)
 5. [App (Oberfläche) aufspielen](#5-app-oberfläche-aufspielen)
-6. [Kameras anschließen und kalibrieren](#6-kameras-anschließen-und-kalibrieren)
+6. [Kameras anschließen, ausrichten und kalibrieren](#6-kameras-anschließen-und-kalibrieren)
 7. [Updates einspielen](#7-updates-einspielen)
 8. [Wichtige Befehle](#8-wichtige-befehle)
 9. [Hilfe bei Fehlern](#9-hilfe-bei-fehlern)
@@ -205,7 +205,18 @@ Jede „Web Camera“ hat zwei Einträge, z. B. `/dev/video0` und `/dev/video1`.
 - Welche Kamera welche ist: eine abziehen, `v4l2-ctl --list-devices` erneut ausführen, die fehlende Nummer ist diese Kamera. Kabel beschriften (1 = video0, 2 = video2, 3 = video4).
 - Andere Nummern: in `DartsCounter_backend/src/main/resources/application.properties` bei `dartscounter.cameras` eintragen, dann [Update](#7-updates-einspielen).
 
-### 6.3 Kalibrieren
+### 6.3 Kameras ausrichten
+
+So erkennt die Software die Pfeile am besten:
+
+- Die Kameras schauen **flach über die Scheibe**. Die Scheibenkante liegt etwa **in der Bildmitte** als waagerechte Linie.
+- Kopfüber montierte Kameras (Pfeile hängen im Bild nach unten) sind richtig so, das ist die Einstellung `dartscounter.camera.tip=top`. Stehen die Pfeile im Bild nach oben, `bottom` eintragen.
+- **Ruhiger Hintergrund:** Hinter der Scheibe sieht jede Kamera den Raum. Bewegt sich dort etwas (Person, Arm), kann das als Pfeil gelten. Am besten ein Ring um die Scheibe (Surround, z. B. 3D-gedruckt oder Pappe), der den Raum dahinter verdeckt.
+- **Gleichmäßiges Licht**, am besten ein LED-Ring. Schwaches Licht macht die Bilder verrauscht.
+- Die Halterungen dürfen sich nicht bewegen. Wird eine Kamera angestoßen, entstehen Fehlalarme, und es muss neu kalibriert werden.
+- Den Weißabgleich hält das Backend nach 2 Sekunden fest (`dartscounter.camera.lock-white-balance=true`). Ohne das springen die Farben mehrmals pro Minute.
+
+### 6.4 Kalibrieren
 
 1. App → **Einstellungen** → **Kameras kalibrieren** → **Kalibrierung starten**.
 2. Pfeil werfen, warten bis „Wurf erkannt“ erscheint.
@@ -214,7 +225,32 @@ Jede „Web Camera“ hat zwei Einträge, z. B. `/dev/video0` und `/dev/video1`.
 5. Mindestens 8, besser 15 Würfe, über die ganze Scheibe verteilt.
 6. **Fertig**. Ziel: mittlerer Fehler unter 2 mm.
 
+Würfe, die gar nicht passen (z. B. falsch angeklickt), sortiert die Kalibrierung selbst aus, höchstens 30 % pro Kamera.
+
 Neu kalibrieren, wenn eine Kamera verstellt wurde oder die Auflösung geändert wurde.
+
+### 6.5 Testaufnahmen machen (zum Verbessern der Erkennung)
+
+Nimmt mit allen drei Kameras gleichzeitig 45 Sekunden auf. Damit kann die Erkennung am PC mit echten Bildern geprüft werden.
+
+**Pi-Terminal:** Backend vorher stoppen (`sudo systemctl stop darts` oder im Backend-Fenster Strg+C).
+
+```
+sudo apt install -y ffmpeg
+mkdir -p ~/testdaten && cd ~/testdaten
+for i in 0 2 4; do ffmpeg -nostdin -y -loglevel error -f v4l2 -input_format mjpeg -video_size 640x480 -framerate 15 -i /dev/video$i -c copy -t 45 video$i.mkv & done; wait; echo FERTIG
+```
+
+Während der Aufnahme: 5 s ruhig, 3 Pfeile mit je 3 s Pause werfen, Foto von vorn, herausziehen, ruhig bleiben bis `FERTIG`. Danach in `treffer.txt` notieren, wo die Pfeile steckten.
+
+Auswerten am PC (im Ordner `DartsCounter_backend`, Videos vorher umwandeln):
+
+```
+ffmpeg -i video0.mkv -vf fps=20 -c:v mjpeg -q:v 2 video0.avi
+./mvnw test -Dtest=RecordingReplayTest -DvideoDir=/pfad/zum/ordner -Dfps=20
+```
+
+Es zeigt pro Kamera, wann welcher Pfeil gemeldet wurde.
 
 ## 7. Updates einspielen
 
@@ -287,7 +323,7 @@ Gespeicherte Daten (Spieler, Spiele, Konten, Kalibrierung) liegen auf dem Pi in 
 | `scan-cameras` zeigt weniger als 3 Kameras | Kamera nicht erkannt, falsche Nummer oder fehlende Rechte | `v4l2-ctl --list-devices`, `groups` muss `video` enthalten. Kameras neu einstecken. |
 | `vcgencmd get_throttled` nicht `0x0` | zu wenig Strom | Stärkeres Netzteil, USB-Hub mit eigenem Netzteil für die Kameras. |
 | `fswebcam` / Kamera: *Device or resource busy* | Backend benutzt die Kamera gerade | `sudo systemctl stop darts`, danach wieder `start`. |
-| Kalibrierung erkennt Würfe, obwohl keiner geworfen wurde | Rauschen, Schatten, Licht | Gleichmäßiges Licht, nichts vor den Kameras bewegen. In `application.properties` `dartscounter.detection.stable-frames` erhöhen (z. B. 5), dann [Update](#7-updates-einspielen). Werden echte Würfe übersehen: Wert senken. |
+| Kalibrierung erkennt Würfe, obwohl keiner geworfen wurde | Bewegung im Raum hinter der Scheibe, Licht, angestoßene Kamera | Siehe [6.3](#63-kameras-ausrichten): Surround und gleichmäßiges Licht, nichts hinter der Scheibe bewegen. In `application.properties` `dartscounter.detection.stable-frames` erhöhen (z. B. 5), dann [Update](#7-updates-einspielen). Werden echte Würfe übersehen: Wert senken. |
 | Pi hängt komplett, sobald Kameras laufen | Überlastung oder Strom | Neueste Version einspielen (640×480), Kameras einzeln dazunehmen, Strom prüfen. |
 
 Hilft nichts davon: die genaue Meldung und die Ausgabe von `journalctl -u darts -n 50` kopieren und nachfragen.

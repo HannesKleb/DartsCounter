@@ -30,14 +30,15 @@ public class CalibrationService {
     // ein Kalibrierwurf: geklickte Position und was jede Kamera gesehen hat
     public record ThrowSample(double x, double y, Map<Integer, Double> pixels) {}
 
-    public record CameraInfo(int camera, int samples, Double rmsPx, boolean calibrated) {}
+    public record CameraInfo(int camera, int samples, Double rmsPx, boolean calibrated, Integer discarded) {}
 
     public record Status(boolean active, boolean calibrated, String createdAt, Double errorMm, Double maxErrorMm,
                          int samples, int minSamples, int recommendedSamples, List<Integer> pendingCameras, List<CameraInfo> cameras) {}
 
     // Inhalt von calibration.json
     record Saved(String createdAt, Double errorMm, Double maxErrorMm,
-                 Map<Integer, CameraModel> models, Map<Integer, Double> rmsPx, List<ThrowSample> samples) {}
+                 Map<Integer, CameraModel> models, Map<Integer, Double> rmsPx, List<ThrowSample> samples,
+                 Map<Integer, Integer> discarded) {}
 
     private final Path file;
     private final int cameraCount;
@@ -82,7 +83,12 @@ public class CalibrationService {
     /** Vom ThrowCollector: true, wenn der Wurf für die Kalibrierung gebraucht wird. */
     public synchronized boolean offerThrow(Map<Integer, Double> pixels) {
         if (!active) return false;
-        pending = new TreeMap<>(pixels); // neuer Wurf ersetzt einen noch nicht angeklickten
+        if (pending != null && pending.keySet().stream().noneMatch(pixels::containsKey)) {
+            // andere Kameras melden denselben Pfeil etwas später: ergänzen
+            pending.putAll(pixels);
+        } else {
+            pending = new TreeMap<>(pixels); // neuer Wurf ersetzt einen noch nicht angeklickten
+        }
         return true;
     }
 
@@ -114,6 +120,7 @@ public class CalibrationService {
         requireActive();
         Map<Integer, CameraModel> models = new TreeMap<>();
         Map<Integer, Double> rms = new TreeMap<>();
+        Map<Integer, Integer> discarded = new TreeMap<>();
         List<String> missing = new ArrayList<>();
 
         for (int cam = 0; cam < cameraCount; cam++) {
@@ -122,13 +129,14 @@ public class CalibrationService {
                 missing.add("Kamera " + (cam + 1) + ": " + camSamples.size());
                 continue;
             }
-            CameraModel model = CameraModel.fit(camSamples);
-            if (model == null) {
+            CameraModel.Fit fit = CameraModel.fitRobust(camSamples);
+            if (fit == null) {
                 throw new ApiException(HttpStatus.CONFLICT,
                         "Die Würfe liegen zu dicht beieinander. Bitte über die ganze Scheibe verteilt werfen.");
             }
-            models.put(cam, model);
-            rms.put(cam, rmsPx(model, camSamples));
+            models.put(cam, fit.model());
+            rms.put(cam, rmsPx(fit.model(), fit.used()));
+            discarded.put(cam, fit.discarded());
         }
         if (models.size() < 2) {
             throw new ApiException(HttpStatus.CONFLICT, "Zu wenige Würfe. Mindestens zwei Kameras brauchen je "
@@ -147,7 +155,7 @@ public class CalibrationService {
             n++;
         }
         saved = new Saved(Instant.now().toString(), n == 0 ? null : round(sum / n), n == 0 ? null : round(max),
-                models, rms, List.copyOf(samples));
+                models, rms, List.copyOf(samples), discarded);
         save(saved);
         active = false;
         samples.clear();
@@ -165,7 +173,8 @@ public class CalibrationService {
             int count = (int) current.stream().filter(s -> s.pixels().containsKey(c)).count();
             Double rms = !active && saved != null ? saved.rmsPx().get(cam) : null;
             boolean calibrated = saved != null && saved.models().containsKey(cam);
-            cams.add(new CameraInfo(cam, count, rms, calibrated));
+            Integer discarded = !active && saved != null && saved.discarded() != null ? saved.discarded().get(cam) : null;
+            cams.add(new CameraInfo(cam, count, rms, calibrated, discarded));
         }
         return new Status(active, saved != null,
                 saved != null ? saved.createdAt() : null,

@@ -126,6 +126,23 @@ class CalibrationApiTest {
     }
 
     @Test
+    void lateCamerasAreMergedIntoSameThrow() throws Exception {
+        call("/services/calibration/start", null, 200);
+        // Kamera 1 meldet zuerst, die anderen erst nach Ablauf des Zeitfensters (langsamer Pi)
+        call("/services/test/detection", Map.of("camera", 0, "pixelX", 300.0), 202);
+        call("/services/test/flush", null, 204);
+        call("/services/test/detection", Map.of("camera", 1, "pixelX", 310.0), 202);
+        call("/services/test/detection", Map.of("camera", 2, "pixelX", 320.0), 202);
+        call("/services/test/flush", null, 204);
+        mvc.perform(get("/services/calibration")).andExpect(jsonPath("$.pendingCameras.length()").value(3));
+
+        // meldet dieselbe Kamera wieder, ist es ein neuer Wurf
+        call("/services/test/detection", Map.of("camera", 0, "pixelX", 100.0), 202);
+        call("/services/test/flush", null, 204);
+        mvc.perform(get("/services/calibration")).andExpect(jsonPath("$.pendingCameras.length()").value(1));
+    }
+
+    @Test
     void clickOutsideBoardRejected() throws Exception {
         call("/services/calibration/start", null, 200);
         throwAt(10, 10, new Random(9));

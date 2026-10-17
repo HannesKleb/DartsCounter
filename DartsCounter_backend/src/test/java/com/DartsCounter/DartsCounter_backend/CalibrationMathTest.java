@@ -100,6 +100,23 @@ class CalibrationMathTest {
     }
 
     @Test
+    void wrongClickIsDiscarded() {
+        Random random = new Random(11);
+        List<CameraModel.Sample> samples = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            double[] p = randomBoardPoint(random);
+            samples.add(new CameraModel.Sample(p[0], p[1], REAL[0].pixel(p[0], p[1]) + random.nextGaussian()));
+        }
+        // ein Klick 6 cm daneben
+        double[] p = randomBoardPoint(random);
+        samples.add(new CameraModel.Sample(p[0] + 60, p[1], REAL[0].pixel(p[0], p[1])));
+
+        CameraModel.Fit fit = CameraModel.fitRobust(samples);
+        assertEquals(1, fit.discarded());
+        assertEquals(REAL[0].pixel(20, -50), fit.model().pixel(20, -50), 3);
+    }
+
+    @Test
     void tooFewOrSamePointsGiveNoModel() {
         List<CameraModel.Sample> few = new ArrayList<>();
         for (int i = 0; i < CameraModel.MIN_SAMPLES - 1; i++) few.add(new CameraModel.Sample(i * 10, 0, REAL[0].pixel(i * 10, 0)));

@@ -13,7 +13,8 @@ import jakarta.annotation.PreDestroy;
 
 /**
  * Sammelt die Meldungen der Kamera-Threads zu einem Wurf: Alles, was innerhalb des Zeitfensters nach der
- * ersten Meldung kommt, gehört zum selben Pfeil. Danach geht der Wurf an die Kalibrierung (wenn sie läuft)
+ * ersten Meldung kommt, gehört zum selben Pfeil. Meldet eine Kamera im selben Fenster einen zweiten Pfeil,
+ * ist der erste Wurf sofort abgeschlossen. Danach geht der Wurf an die Kalibrierung (wenn sie läuft)
  * oder wird trianguliert und als Treffer gespeichert.
  */
 @Service
@@ -30,31 +31,50 @@ public class ThrowCollector {
     });
 
     private Map<Integer, Double> group;   // aktueller Wurf, Kamera -> Pixelspalte
+    private long generation;              // damit ein alter Zeitgeber keinen neuen Wurf zu früh abschließt
     private long nextId = 1;
     private volatile Hit lastHit;
 
-    public ThrowCollector(CalibrationService calibration, @Value("${dartscounter.detection.window-ms:400}") long windowMs) {
+    public ThrowCollector(CalibrationService calibration, @Value("${dartscounter.detection.window-ms:1200}") long windowMs) {
         this.calibration = calibration;
         this.windowMs = windowMs;
     }
 
     // von jedem Kamera-Thread aufgerufen
-    public synchronized void report(int camera, double pixelX) {
-        if (group == null) {
-            group = new TreeMap<>();
-            timer.schedule(this::flush, windowMs, TimeUnit.MILLISECONDS);
+    public void report(int camera, double pixelX) {
+        Map<Integer, Double> finished = null;
+        synchronized (this) {
+            if (group != null && group.containsKey(camera)) {
+                // dieselbe Kamera sieht schon den nächsten Pfeil: alten Wurf abschließen
+                finished = group;
+                group = null;
+            }
+            if (group == null) {
+                group = new TreeMap<>();
+                long gen = ++generation;
+                timer.schedule(() -> flush(gen), windowMs, TimeUnit.MILLISECONDS);
+            }
+            group.put(camera, pixelX);
         }
-        group.put(camera, pixelX);
+        if (finished != null) finish(finished);
     }
 
-    /** Wurf abschließen (sonst nach Ablauf des Zeitfensters automatisch). */
+    /** Wurf sofort abschließen (sonst nach Ablauf des Zeitfensters automatisch). */
     public void flush() {
+        flush(-1);
+    }
+
+    private void flush(long gen) {
         Map<Integer, Double> pixels;
         synchronized (this) {
-            if (group == null) return;
+            if (group == null || (gen >= 0 && gen != generation)) return;
             pixels = group;
             group = null;
         }
+        finish(pixels);
+    }
+
+    private void finish(Map<Integer, Double> pixels) {
         if (calibration.offerThrow(pixels)) return;
 
         Triangulator.Point p = Triangulator.locate(pixels, calibration.models());
