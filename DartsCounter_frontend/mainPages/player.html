@@ -28,12 +28,12 @@
         </div>
         <div class="player-list" id="known-player-list"></div>
     </div>
-    <div class="bar">
-        <button class="bar-btn" id="main" onclick="bar('index.html')">Hauptseite</button>
-        <button class="bar-btn-active" id="player" onclick="bar('player.html')">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
-        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
-        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
-    </div>
+    <nav class="bar" aria-label="Hauptmenü">
+        <button class="bar-btn" id="main" onclick="bar('index.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg><span>Spielen</span></button>
+        <button class="bar-btn-active" id="player" aria-current="page" onclick="bar('player.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg><span>Spieler</span></button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistik</span></button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Verlauf</span></button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Mehr</span></button>
+    </nav>
 </body>
 </html>

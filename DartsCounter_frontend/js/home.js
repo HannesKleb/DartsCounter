@@ -98,7 +98,10 @@ function writeOptions(mode, options) {
 function restoreModeChoice() {
     try {
         const saved = JSON.parse(localStorage.getItem("lastModeChoice") ?? "null");
-        if (!saved) return;
+        if (!saved) {
+            showMode("mode-X01", "mode"); // erster Besuch: X01 vorauswählen, damit nie ein leeres Feld zu sehen ist
+            return;
+        }
         for (const [mode, options] of Object.entries(saved.options ?? {})) writeOptions(mode, options);
         if (saved.mode && MODES[saved.mode]) showMode(`mode-${saved.mode}`, "mode");
     } catch {

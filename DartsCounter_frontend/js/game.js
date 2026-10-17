@@ -109,6 +109,7 @@ function initKeyboard() {
     document.querySelectorAll("[data-number]").forEach((btn) => {
         btn.addEventListener("click", () => pressNumber(parseInt(btn.dataset.number, 10)));
     });
+    document.getElementById("single-btn").addEventListener("click", () => toggleModifier(null));
     document.getElementById("double-btn").addEventListener("click", () => toggleModifier("D"));
     document.getElementById("triple-btn").addEventListener("click", () => toggleModifier("T"));
     document.getElementById("undo-btn").addEventListener("click", undo);
@@ -119,9 +120,15 @@ function toggleModifier(type) {
     updateModifierButtons();
 }
 
+// Single/Double/Triple: genau einer ist aktiv; die Zahlentasten zeigen den Wert mit (siehe style.css)
 function updateModifierButtons() {
-    document.getElementById("double-btn")?.classList.toggle("active", modifier === "D");
-    document.getElementById("triple-btn")?.classList.toggle("active", modifier === "T");
+    for (const [id, type] of [["single-btn", null], ["double-btn", "D"], ["triple-btn", "T"]]) {
+        const btn = document.getElementById(id);
+        btn?.classList.toggle("active", modifier === type);
+        btn?.setAttribute("aria-pressed", String(modifier === type));
+    }
+    const keys = document.getElementById("score-button-id");
+    if (keys) keys.dataset.mod = modifier ?? "";
 }
 
 function pressNumber(number) {
@@ -212,11 +219,16 @@ function playerCard(player, p) {
             view.mainLabel ? h("div", { class: "score-label", text: view.mainLabel }) : null,
             h("div", { class: "last-score" },
                 [0, 1, 2].map((i) => h("div", {
-                    class: `last-score-field${i === animateDartIndex ? " dart-in" : ""}`,
-                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : "-"
+                    class: `last-score-field${shownDarts[i] === undefined ? " empty" : ""}${i === animateDartIndex ? " dart-in" : ""}`,
+                    text: shownDarts[i] !== undefined ? fieldLabel(shownDarts[i]) : ""
                 })))),
         h("div", { class: "small-scoring-stats" },
-            view.finish ? h("div", { class: "finish", text: `Finish: ${view.finish}` }) : null,
+            view.finish ? h("div", { class: "finish" },
+                h("span", { class: "finish-label", text: "Finish" }),
+                view.finish.map((field) => h("span", {
+                    class: `finish-chip${field[0] === "D" ? " double" : ""}`,
+                    text: fieldLabel(field)
+                }))) : null,
             view.lines.map((line) => h("div", { text: line }))));
 }
 
@@ -243,7 +255,7 @@ function playerView(p) {
             ];
             if (!ps.opened) lines.push("Noch kein Double getroffen");
             const path = ps.opened && ps.score <= 170 ? findCheckout(ps.score, dartsLeft, game.options.out) : null;
-            return { main: ps.score, finish: path?.map(fieldLabel).join(" "), lines };
+            return { main: ps.score, finish: path, lines };
         }
         case "CRICKET":
             return {
@@ -267,7 +279,7 @@ function playerView(p) {
                     `Aufnahme ${ps.turnInAttempt + 1}/3`];
             lines.push(`Geschafft: ${ps.successes}, bestes Ziel: ${ps.best || "-"}`);
             const path = done ? null : findCheckout(ps.remaining, dartsLeft, "double");
-            return { main: done ? "Fertig" : ps.remaining, finish: path?.map(fieldLabel).join(" "), lines };
+            return { main: done ? "Fertig" : ps.remaining, finish: path, lines };
         }
         case "FREE":
             return {

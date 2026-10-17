@@ -16,7 +16,7 @@
     <div class="header">
         <h1>Darts Counter</h1>
         <div class="page">
-            <h2>Hauptseite</h2>
+            <h2>Neues Spiel</h2>
         </div>
     </div>
     <div class="content">
@@ -26,11 +26,11 @@
                 <h3>Spielmodus</h3>
             </div>
             <div class="selection-btn">
-                <button class="selection-button" id="X01-btn" data-target="mode-X01" onclick="showMode('mode-X01', 'mode')">X01</button>
-                <button class="selection-button" id="cricket-btn" data-target="mode-CRICKET" onclick="showMode('mode-CRICKET', 'mode')">Cricket</button>
-                <button class="selection-button" id="around-the-clock-btn" data-target="mode-ATC" onclick="showMode('mode-ATC', 'mode')">Around the Clock</button>
-                <button class="selection-button" id="g121-btn" data-target="mode-G121" onclick="showMode('mode-G121', 'mode')">121</button>
-                <button class="selection-button" id="freies-spiel-btn" data-target="mode-FREE" onclick="showMode('mode-FREE', 'mode')">Freies Spiel</button>
+                <button class="selection-button" id="X01-btn" data-target="mode-X01" onclick="showMode('mode-X01', 'mode')">X01<span class="mode-sub">auf 0 spielen</span></button>
+                <button class="selection-button" id="cricket-btn" data-target="mode-CRICKET" onclick="showMode('mode-CRICKET', 'mode')">Cricket<span class="mode-sub">15–20 + Bull</span></button>
+                <button class="selection-button" id="around-the-clock-btn" data-target="mode-ATC" onclick="showMode('mode-ATC', 'mode')">Around the Clock<span class="mode-sub">1 bis 20</span></button>
+                <button class="selection-button" id="g121-btn" data-target="mode-G121" onclick="showMode('mode-G121', 'mode')">121<span class="mode-sub">Checkout-Training</span></button>
+                <button class="selection-button" id="freies-spiel-btn" data-target="mode-FREE" onclick="showMode('mode-FREE', 'mode')">Freies Spiel<span class="mode-sub">Punkte sammeln</span></button>
             </div>
             <div class="selection">
                 <div class="selection-mode">
@@ -129,12 +129,12 @@
             <button id="start-btn">Start</button>
         </div>
     </div>
-    <div class="bar">
-        <button class="bar-btn-active" id="main" onclick="bar('index.html')">Hauptseite</button>
-        <button class="bar-btn" id="player" onclick="bar('player.html')">Spieler</button>
-        <button class="bar-btn" id="stats" onclick="bar('stats.html')">Statistiken</button>
-        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')">Alle Spiele</button>
-        <button class="bar-btn" id="settings" onclick="bar('settings.html')">Einstellungen</button>
-    </div>
+    <nav class="bar" aria-label="Hauptmenü">
+        <button class="bar-btn-active" id="main" aria-current="page" onclick="bar('index.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg><span>Spielen</span></button>
+        <button class="bar-btn" id="player" onclick="bar('player.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg><span>Spieler</span></button>
+        <button class="bar-btn" id="stats" onclick="bar('stats.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistik</span></button>
+        <button class="bar-btn" id="allGames" onclick="bar('allGames.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Verlauf</span></button>
+        <button class="bar-btn" id="settings" onclick="bar('settings.html')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Mehr</span></button>
+    </nav>
 </body>
 </html>
