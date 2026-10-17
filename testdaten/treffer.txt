@@ -1,0 +1,4 @@
+Pfeil 1: 9, grösserer teil, mittig, unten
+Pfeil 2: 4, grösserer teil, linksg, mittig
+Pfeil 3: 3, grösserer teil,mittig, mittig
+
