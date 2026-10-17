@@ -41,6 +41,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- nur BCrypt für die Zugangscodes, kein komplettes Spring Security -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.openpnp</groupId>
 			<artifactId>opencv</artifactId>

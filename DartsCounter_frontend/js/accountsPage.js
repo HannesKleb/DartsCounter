@@ -1,7 +1,7 @@
 /********* Konten verwalten (nur Admin) *********/
 
-document.addEventListener("DOMContentLoaded", () => {
-    if (!Auth.isAdmin()) {
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!(await Auth.isAdmin())) {
         document.getElementById("accounts-content").replaceChildren(
             h("div", { class: "empty-state" },
                 h("p", { text: "Diese Seite ist nur für Admins." }),
@@ -40,8 +40,15 @@ function showCard(account, code) {
 
 async function renderAccounts() {
     const listEl = document.getElementById("account-list");
-    const accounts = await Accounts.list();
-    const me = Auth.current();
+    const error = document.getElementById("list-error");
+    let accounts;
+    try {
+        accounts = await Accounts.list();
+    } catch (err) {
+        error.textContent = err.message;
+        return;
+    }
+    const me = await Auth.current();
 
     listEl.replaceChildren(...accounts.map((account) => {
         const roleSelect = h("select", { "aria-label": `Rolle von ${account.name}` },

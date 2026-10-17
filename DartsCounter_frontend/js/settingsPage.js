@@ -30,8 +30,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("authchange", renderAccountSection);
 });
 
-function renderAccountSection() {
-    const user = Auth.current();
+async function renderAccountSection() {
+    const user = await Auth.current();
     document.getElementById("account-status").textContent = user
         ? `Angemeldet als ${user.name} (${ACCOUNT_ROLES[user.role]}).`
         : "Nicht angemeldet. Spielen geht auch ohne Konto.";
@@ -40,9 +40,9 @@ function renderAccountSection() {
     if (user) {
         actions.push(h("button", {
             class: "input-btn", text: "Abmelden",
-            onclick: () => {
-                Auth.logout();
-                renderUserMenu();
+            onclick: async () => {
+                await Auth.logout();
+                await renderUserMenu();
                 renderAccountSection();
             }
         }));

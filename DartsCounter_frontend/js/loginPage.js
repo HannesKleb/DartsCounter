@@ -1,7 +1,13 @@
 /********* Anmelden / erster Start *********/
 
 document.addEventListener("DOMContentLoaded", async () => {
-    if (await Auth.setupNeeded()) renderSetup();
+    let setup = false;
+    try {
+        setup = await Auth.setupNeeded();
+    } catch (err) {
+        console.warn("Konten-Status nicht abrufbar:", err.message);
+    }
+    if (setup) renderSetup();
     else renderLogin();
 });
 

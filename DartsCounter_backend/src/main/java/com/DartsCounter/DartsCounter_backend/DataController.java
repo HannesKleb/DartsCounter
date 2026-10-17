@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-// Frontend läuft auf einem anderen Port (Webserver / Live Server), deshalb CORS für alle Ursprünge im Heimnetz
-@CrossOrigin(origins = "*")
+// CORS steht in WebConfig
 public class DataController {
     private final DataStore dataStore;
 

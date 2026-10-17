@@ -140,8 +140,16 @@ function renderKnownPlayers() {
     const list = document.getElementById("known-players");
     // bekannte Spieler und Spielernamen der Konten als Vorschläge
     const names = new Set(knownPlayers.map((p) => p.name));
-    if (typeof Auth !== "undefined") Auth.accountNames().forEach((name) => names.add(name));
-    list.replaceChildren(...[...names].map((name) => h("option", { value: name })));
+    const render = () => list.replaceChildren(...[...names].map((name) => h("option", { value: name })));
+    render();
+    if (typeof Auth !== "undefined") {
+        Auth.accountNames()
+            .then((accountNames) => {
+                accountNames.forEach((name) => names.add(name));
+                render();
+            })
+            .catch(() => {});
+    }
 }
 
 function renderLobby() {

@@ -2,17 +2,22 @@
 // Ein Konto hat nur: Spielername, Rolle (admin/spieler) und einen Zugangscode.
 // Keine E-Mail, kein echter Name, kein selbst gewähltes Passwort.
 //
-// DEMO-MODUS: Solange es kein Backend für Konten gibt, liegen die Konten nur in diesem Browser
-// (localStorage). Das ist NICHT sicher (jeder mit Zugriff auf den Browser kann sie ändern).
-// Für echte Konten übernimmt später das Backend diese Schnittstelle, geplant:
-//   POST   /api/auth/login              {name, code} -> {token, account}
+// Normalfall: Das Backend verwaltet die Konten (speichert nur einen Hash des Codes, begrenzt Fehlversuche).
+//   GET    /api/auth/setup                            -> {needed}
 //   POST   /api/auth/setup              {name}       -> {account, code}   (nur wenn noch kein Konto existiert)
+//   POST   /api/auth/login              {name, code} -> {token, account}
+//   POST   /api/auth/logout                           -> 204
+//   GET    /api/auth/me                               -> account
 //   GET    /api/accounts                              -> [account]          (nur Admin)
 //   POST   /api/accounts                {name, role} -> {account, code}   (nur Admin)
 //   POST   /api/accounts/{id}/code                    -> {code}            (nur Admin)
 //   PATCH  /api/accounts/{id}           {role}       -> account           (nur Admin)
-//   DELETE /api/accounts/{id}                                              (nur Admin)
-// Das Backend speichert nur einen Hash des Codes und begrenzt Fehlversuche.
+//   DELETE /api/accounts/{id}                         -> 204               (nur Admin)
+// Das Token liegt in localStorage und geht als "Authorization: Bearer <token>" mit.
+//
+// DEMO-MODUS: Nur wenn das Backend nicht erreichbar ist. Dann liegen die Konten nur in diesem Browser
+// (localStorage). Das ist NICHT sicher (jeder mit Zugriff auf den Browser kann sie ändern).
+// Alle Funktionen von Auth und Accounts sind async.
 
 const ACCOUNT_ROLES = { admin: "Admin", player: "Spieler" };
 const NAME_MAX = 16;
@@ -40,7 +45,7 @@ function validateName(name) {
     return null;
 }
 
-/********* SHA-256 (für Codes im Demo-Modus) *********/
+/********* SHA-256 (nur für Codes im Demo-Modus) *********/
 // crypto.subtle gibt es nur über HTTPS/localhost, deshalb eine eigene kleine Umsetzung.
 
 function sha256Hex(text) {
@@ -127,23 +132,135 @@ function nameTaken(list, name, exceptId = null) {
     return list.some((a) => a.id !== exceptId && a.name.toLowerCase() === name.toLowerCase());
 }
 
+/********* Backend oder Demo-Modus *********/
+
+const TOKEN_KEY = "authToken";
+
+// wird pro Seite einmal entschieden, damit nicht mitten im Ablauf zwischen zwei Speichern gewechselt wird
+let accountsModePromise = null;
+
+function accountsMode() {
+    if (!accountsModePromise) {
+        accountsModePromise = (async () => {
+            try {
+                const response = await backendFetch("/api/auth/setup", { cache: "no-store" });
+                if (response.ok) return "backend";
+            } catch {
+                // nicht erreichbar
+            }
+            return "demo";
+        })().then((mode) => {
+            Accounts.demoMode = mode === "demo";
+            if (Accounts.demoMode) showDemoBanner();
+            return mode;
+        });
+    }
+    return accountsModePromise;
+}
+
+async function isDemo() {
+    return (await accountsMode()) === "demo";
+}
+
+// Hinweis nur auf den Konten-Seiten, sonst reicht das "Demo"-Abzeichen oben rechts
+function showDemoBanner() {
+    if (!document.getElementById("auth-box") && !document.getElementById("accounts-content")) return;
+    if (document.getElementById("demo-banner")) return;
+    const banner = h("div", {
+        id: "demo-banner", class: "offline-banner",
+        text: "Demo-Modus: Backend nicht erreichbar. Konten liegen nur in diesem Browser und sind nicht geschützt."
+    });
+    document.body.prepend(banner);
+}
+
+function readToken() {
+    try {
+        return localStorage.getItem(TOKEN_KEY);
+    } catch {
+        return null;
+    }
+}
+
+function writeToken(token) {
+    try {
+        if (token) localStorage.setItem(TOKEN_KEY, token);
+        else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+        // egal
+    }
+}
+
+// Aufruf ans Backend; Fehler kommen als Error mit der deutschen Meldung vom Backend
+async function authApi(path, { method = "GET", body } = {}) {
+    const headers = {};
+    const token = readToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+
+    let response;
+    try {
+        response = await backendFetch(path, {
+            method,
+            headers,
+            cache: "no-store",
+            body: body === undefined ? undefined : JSON.stringify(body)
+        }, { force: true });
+    } catch {
+        throw new Error("Backend nicht erreichbar. Bitte später erneut versuchen.");
+    }
+
+    let data = null;
+    if (response.status !== 204) {
+        try {
+            data = await response.json();
+        } catch {
+            data = null;
+        }
+    }
+    if (!response.ok) {
+        // Token abgelaufen oder Code neu gesetzt: abmelden
+        if (response.status === 401 && path !== "/api/auth/login") {
+            writeToken(null);
+            currentPromise = null;
+        }
+        throw new Error(data?.message ?? `Fehler vom Backend (${response.status}).`);
+    }
+    return data;
+}
+
+function toUser(account) {
+    return account ? { accountId: account.id, name: account.name, role: account.role } : null;
+}
+
+/********* Konten verwalten *********/
+
 const Accounts = {
-    demoMode: true,
+    demoMode: false,
 
     async list() {
-        Auth.requireAdmin();
+        if (!(await isDemo())) return authApi("/api/accounts");
+        await Auth.requireAdmin();
         return readDemoAccounts()
             .map(publicAccount)
             .sort((a, b) => a.name.localeCompare(b.name, "de"));
     },
 
     async create({ name, role = "player" }) {
-        Auth.requireAdmin();
-        return createAccount(name, role);
+        if (!(await isDemo())) {
+            const error = validateName(name);
+            if (error) throw new Error(error);
+            return authApi("/api/accounts", { method: "POST", body: { name: name.trim(), role } });
+        }
+        await Auth.requireAdmin();
+        return createDemoAccount(name, role);
     },
 
     async resetCode(id) {
-        Auth.requireAdmin();
+        if (!(await isDemo())) {
+            const { code } = await authApi(`/api/accounts/${encodeURIComponent(id)}/code`, { method: "POST" });
+            return code;
+        }
+        await Auth.requireAdmin();
         const list = readDemoAccounts();
         const account = list.find((a) => a.id === id);
         if (!account) throw new Error("Konto nicht gefunden.");
@@ -155,7 +272,10 @@ const Accounts = {
     },
 
     async setRole(id, role) {
-        Auth.requireAdmin();
+        if (!(await isDemo())) {
+            return authApi(`/api/accounts/${encodeURIComponent(id)}`, { method: "PATCH", body: { role } });
+        }
+        await Auth.requireAdmin();
         if (!ACCOUNT_ROLES[role]) throw new Error("Unbekannte Rolle.");
         const list = readDemoAccounts();
         const account = list.find((a) => a.id === id);
@@ -169,19 +289,23 @@ const Accounts = {
     },
 
     async remove(id) {
-        Auth.requireAdmin();
+        if (!(await isDemo())) {
+            await authApi(`/api/accounts/${encodeURIComponent(id)}`, { method: "DELETE" });
+            return;
+        }
+        await Auth.requireAdmin();
         const list = readDemoAccounts();
         const account = list.find((a) => a.id === id);
         if (!account) return;
         if (account.role === "admin" && list.filter((a) => a.role === "admin").length === 1) {
             throw new Error("Der letzte Admin kann nicht gelöscht werden.");
         }
-        if (Auth.current()?.accountId === id) throw new Error("Du kannst dein eigenes Konto nicht löschen.");
+        if (demoCurrent()?.accountId === id) throw new Error("Du kannst dein eigenes Konto nicht löschen.");
         writeDemoAccounts(list.filter((a) => a.id !== id));
     }
 };
 
-function createAccount(name, role) {
+function createDemoAccount(name, role) {
     const error = validateName(name);
     if (error) throw new Error(error);
     if (!ACCOUNT_ROLES[role]) throw new Error("Unbekannte Rolle.");
@@ -208,66 +332,124 @@ function newAccountId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+function demoCurrent() {
+    try {
+        const session = JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null");
+        if (!session) return null;
+        // Konto könnte inzwischen gelöscht worden sein
+        const account = readDemoAccounts().find((a) => a.id === session.accountId);
+        return account ? toUser(account) : null;
+    } catch {
+        return null;
+    }
+}
+
+function startDemoSession(account) {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ accountId: account.id, since: new Date().toISOString() }));
+}
+
+/********* Anmeldung *********/
+
+// angemeldetes Konto, pro Seite einmal beim Backend geprüft
+let currentPromise = null;
+
 const Auth = {
     // Erster Start: noch kein Konto vorhanden
     async setupNeeded() {
-        return readDemoAccounts().length === 0;
+        if (await isDemo()) return readDemoAccounts().length === 0;
+        const { needed } = await authApi("/api/auth/setup");
+        return needed;
     },
 
     async setupAdmin(name) {
-        if (!(await this.setupNeeded())) throw new Error("Es gibt schon Konten.");
-        const result = createAccount(name, "admin");
-        this.startSession(result.account);
+        const error = validateName(name);
+        if (error) throw new Error(error);
+        if (await isDemo()) {
+            if (!(await this.setupNeeded())) throw new Error("Es gibt schon Konten.");
+            const result = createDemoAccount(name, "admin");
+            startDemoSession(result.account);
+            currentPromise = null;
+            return result;
+        }
+        const result = await authApi("/api/auth/setup", { method: "POST", body: { name: name.trim() } });
+        // gleich anmelden, damit der Admin weitermachen kann
+        await this.login(result.account.name, result.code);
         return result;
     },
 
     async login(name, code) {
-        const list = readDemoAccounts();
-        const account = list.find((a) => a.name.toLowerCase() === String(name).trim().toLowerCase());
-        // gleiche Meldung für falschen Namen und falschen Code
-        if (!account || hashCode(code, account.salt) !== account.codeHash) {
-            throw new Error("Spielername oder Zugangscode stimmt nicht.");
+        currentPromise = null;
+        if (await isDemo()) {
+            const list = readDemoAccounts();
+            const account = list.find((a) => a.name.toLowerCase() === String(name).trim().toLowerCase());
+            // gleiche Meldung für falschen Namen und falschen Code
+            if (!account || hashCode(code, account.salt) !== account.codeHash) {
+                throw new Error("Spielername oder Zugangscode stimmt nicht.");
+            }
+            startDemoSession(account);
+            return publicAccount(account);
         }
-        this.startSession(publicAccount(account));
-        return publicAccount(account);
+        const { token, account } = await authApi("/api/auth/login", {
+            method: "POST",
+            body: { name: String(name).trim(), code: String(code) }
+        });
+        writeToken(token);
+        return account;
     },
 
-    logout() {
+    async logout() {
+        currentPromise = null;
         try {
             localStorage.removeItem(SESSION_KEY);
         } catch {
             // egal
         }
-    },
-
-    current() {
-        try {
-            const session = JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null");
-            if (!session) return null;
-            // Konto könnte inzwischen gelöscht worden sein
-            const account = readDemoAccounts().find((a) => a.id === session.accountId);
-            if (!account) return null;
-            return { accountId: account.id, name: account.name, role: account.role };
-        } catch {
-            return null;
+        if (readToken() && !(await isDemo())) {
+            try {
+                await authApi("/api/auth/logout", { method: "POST" });
+            } catch {
+                // Token wird trotzdem gelöscht
+            }
         }
+        writeToken(null);
     },
 
-    isAdmin() {
-        return this.current()?.role === "admin";
+    // {accountId, name, role} oder null
+    current() {
+        if (!currentPromise) {
+            currentPromise = (async () => {
+                if (await isDemo()) return demoCurrent();
+                if (!readToken()) return null;
+                try {
+                    return toUser(await authApi("/api/auth/me"));
+                } catch {
+                    return null;
+                }
+            })();
+        }
+        return currentPromise;
     },
 
-    requireAdmin() {
-        if (!this.isAdmin()) throw new Error("Nur für Admins.");
+    async isAdmin() {
+        return (await this.current())?.role === "admin";
     },
 
-    startSession(account) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ accountId: account.id, since: new Date().toISOString() }));
+    async requireAdmin() {
+        if (!(await this.isAdmin())) throw new Error("Nur für Admins.");
     },
 
-    // nur Spielernamen (für Vorschläge bei der Spielerauswahl), keine weiteren Daten
-    accountNames() {
-        return readDemoAccounts().map((a) => a.name);
+    // nur Spielernamen (für Vorschläge bei der Spielerauswahl), keine weiteren Daten.
+    // Mit Backend sieht nur ein Admin alle Namen, sonst nur den eigenen.
+    async accountNames() {
+        if (await isDemo()) return readDemoAccounts().map((a) => a.name);
+        const user = await this.current();
+        if (!user) return [];
+        if (user.role !== "admin") return [user.name];
+        try {
+            return (await authApi("/api/accounts")).map((a) => a.name);
+        } catch {
+            return [user.name];
+        }
     }
 };
 
@@ -316,26 +498,28 @@ function printAccessCard(card) {
 
 /********* Anzeige oben rechts: angemeldet als ... *********/
 
-function renderUserMenu() {
+async function renderUserMenu() {
     const header = document.querySelector(".header");
     if (!header) return;
-    header.querySelector(".user-menu")?.remove();
 
-    const user = Auth.current();
+    const user = await Auth.current();
+    const demo = Accounts.demoMode;
+    header.querySelector(".user-menu")?.remove();
     const menu = h("div", { class: "user-menu" });
     if (user) {
         const items = [
             h("span", { class: "user-pill", title: ACCOUNT_ROLES[user.role] },
                 h("span", { text: user.name }),
-                user.role === "admin" ? h("span", { class: "badge", text: "Admin" }) : null),
+                user.role === "admin" ? h("span", { class: "badge", text: "Admin" }) : null,
+                demo ? h("span", { class: "badge", text: "Demo", title: "Backend nicht erreichbar, Konten nur in diesem Browser" }) : null),
             user.role === "admin"
                 ? h("button", { class: "input-btn", text: "Konten", onclick: () => bar("accounts.html") })
                 : null,
             h("button", {
                 class: "input-btn", text: "Abmelden",
-                onclick: () => {
-                    Auth.logout();
-                    renderUserMenu();
+                onclick: async () => {
+                    await Auth.logout();
+                    await renderUserMenu();
                     document.dispatchEvent(new CustomEvent("authchange"));
                 }
             })

@@ -50,11 +50,15 @@ public class DataStore {
     }
 
     public synchronized void write(String key, String json) throws IOException {
-        Files.createDirectories(dataDir);
-        // erst temporär schreiben und dann ersetzen, damit bei Stromausfall keine halbe Datei bleibt
-        Path tmp = dataDir.resolve(key + ".json.tmp");
-        Files.writeString(tmp, json, StandardCharsets.UTF_8);
-        Files.move(tmp, fileFor(key), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        writeAtomically(fileFor(key), json);
+    }
+
+    // erst temporär schreiben und dann ersetzen, damit bei Stromausfall keine halbe Datei bleibt
+    static void writeAtomically(Path file, String content) throws IOException {
+        Files.createDirectories(file.getParent());
+        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+        Files.writeString(tmp, content, StandardCharsets.UTF_8);
+        Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 
     public synchronized void delete(String key) throws IOException {
