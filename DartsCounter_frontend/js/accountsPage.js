@@ -1,6 +1,6 @@
 /********* Konten verwalten (nur Admin) *********/
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     if (!(await Auth.isAdmin())) {
         document.getElementById("accounts-content").replaceChildren(
             h("div", { class: "empty-state" },
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     document.getElementById("create-form").addEventListener("submit", createFromForm);
     renderAccounts();
-});
+}));
 
 async function createFromForm(event) {
     event.preventDefault();

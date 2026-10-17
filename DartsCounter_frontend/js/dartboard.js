@@ -103,9 +103,22 @@ function randomNormal() {
 }
 
 function simulateThrow(targetField, level) {
+    return simulateThrowPoint(targetField, level).field;
+}
+
+// wie simulateThrow, mit Auftreffpunkt in mm (zum Einzeichnen)
+function simulateThrowPoint(targetField, level) {
     const spread = BOT_SPREAD_MM[level] ?? BOT_SPREAD_MM.medium;
     const center = fieldCenter(targetField);
-    return fieldFromXY(center.x + randomNormal() * spread, center.y + randomNormal() * spread);
+    const point = clampToBoard(center.x + randomNormal() * spread, center.y + randomNormal() * spread);
+    return { field: fieldFromXY(point.x, point.y), ...point };
+}
+
+// Punkt auf den Scheibenrand begrenzen (mm)
+function clampToBoard(x, y) {
+    const r = Math.hypot(x, y);
+    const max = BOARD_RADIUS.board;
+    return r > max ? { x: (x / r) * max, y: (y / r) * max } : { x, y };
 }
 
 /********* Checkout-Wege *********/
@@ -247,4 +260,14 @@ function createBoardSvg() {
     svg.append(svgEl("circle", { r: R.outerBull, class: "board-field bull-outer", "data-field": "SB" }));
     svg.append(svgEl("circle", { r: R.innerBull, class: "board-field bull-inner", "data-field": "DB" }));
     return svg;
+}
+
+// Bildschirm-Pixel -> Scheiben-Koordinaten in mm (auch bei skalierter oder verschobener Scheibe exakt)
+function boardPointFromClient(svg, clientX, clientY) {
+    const point = new DOMPoint(clientX, clientY).matrixTransform(svg.getScreenCTM().inverse());
+    return { x: point.x, y: point.y };
+}
+
+function boardPointToClient(svg, x, y) {
+    return new DOMPoint(x, y).matrixTransform(svg.getScreenCTM());
 }

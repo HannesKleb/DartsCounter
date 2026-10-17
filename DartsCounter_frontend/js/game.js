@@ -11,8 +11,12 @@ let saveQueue = Promise.resolve();
 let previousMain = [];      // letzte angezeigte Hauptzahl pro Spieler (Animation bei Änderung)
 let previousCurrent = null; // wer zuletzt dran war (Animation beim Spielerwechsel)
 let newDart = null;         // zuletzt eingegebener Dart {player, index} für die Einblend-Animation
+let boardSvg = null;
+let aim = null;             // {x, y, pointerId, lens} solange auf der Scheibe gedrückt wird
 
-document.addEventListener("DOMContentLoaded", initGamePage);
+const LENS_SPAN_MM = 70;    // Ausschnitt der Lupe beim Antippen (Breite in mm)
+
+document.addEventListener("DOMContentLoaded", () => runPage(initGamePage));
 
 async function initGamePage() {
     settings = await loadSettings();
@@ -51,16 +55,36 @@ function showNoGame() {
 
 /********* Darts eingeben *********/
 
-function addDart(field) {
+// point = Auftreffpunkt in mm (Scheibe, Bot) oder null (Tastatur), nur zum Einzeichnen
+function addDart(field, point = null) {
     if (!state || state.finished) return;
     newDart = { player: state.current, index: state.turn.length };
+    const points = dartPoints();
+    points.push(point ? { x: round1(point.x), y: round1(point.y) } : null);
+    game.points = points;
     game.darts.push(field);
     afterChange();
 }
 
-function addHumanDart(field) {
+function addHumanDart(field, point = null) {
     if (!state || state.finished || game.players[state.current].bot) return;
-    addDart(field);
+    addDart(field, point);
+}
+
+function popDart() {
+    game.darts.pop();
+    game.points = dartPoints().slice(0, game.darts.length);
+}
+
+// Punkte passend zu game.darts (ältere Spiele haben keine)
+function dartPoints() {
+    const points = Array.isArray(game.points) ? game.points.slice(0, game.darts.length) : [];
+    while (points.length < game.darts.length) points.push(null);
+    return points;
+}
+
+function round1(value) {
+    return Math.round(value * 10) / 10;
 }
 
 // Rückgängig: entfernt den letzten eigenen Dart (Bot-Darts danach werden mit entfernt)
@@ -74,10 +98,10 @@ function undo() {
     if (hasHuman) {
         while (owners.length > 0 && game.players[owners.at(-1)].bot) {
             owners.pop();
-            game.darts.pop();
+            popDart();
         }
     }
-    game.darts.pop();
+    popDart();
     afterChange();
 }
 
@@ -144,24 +168,107 @@ function pressNumber(number) {
 function initBoard() {
     const container = document.getElementById("board");
     if (!container) return;
-    const svg = createBoardSvg();
-    container.replaceChildren(svg);
+    boardSvg = createBoardSvg();
+    boardSvg.append(svgEl("g", { class: "board-marks" }), svgEl("g", { class: "board-aim" }));
 
-    svg.addEventListener("click", (event) => {
-        // Feld direkt vom angetippten Ring-Stück, sonst über die Position berechnen
-        const target = event.target.closest("[data-field]");
-        const field = target ? target.dataset.field : fieldFromScreen(svg, event.clientX, event.clientY);
-        if (target?.classList.contains("board-field")) replayAnimation(target, "hit");
-        addHumanDart(field);
+    const lensSvg = createBoardSvg();
+    lensSvg.removeAttribute("role");
+    lensSvg.append(svgEl("g", { class: "board-marks" }));
+    const lens = h("div", { class: "board-lens", hidden: true, "aria-hidden": "true" },
+        lensSvg, h("div", { class: "calib-lens-cross" }), h("div", { class: "board-lens-label" }));
+    container.replaceChildren(boardSvg, lens);
+
+    // Drücken zeigt die Stelle (am Handy mit Lupe), Ziehen korrigiert, Loslassen zählt den Dart
+    boardSvg.addEventListener("pointerdown", (event) => {
+        if (event.button > 0 || !state || state.finished || game.players[state.current].bot) return;
+        event.preventDefault();
+        boardSvg.setPointerCapture(event.pointerId);
+        aim = { pointerId: event.pointerId, lens: event.pointerType !== "mouse" };
+        moveAim(event);
+    });
+    boardSvg.addEventListener("pointermove", (event) => {
+        if (aim?.pointerId === event.pointerId) moveAim(event);
+    });
+    boardSvg.addEventListener("pointerup", (event) => {
+        if (aim?.pointerId !== event.pointerId) return;
+        moveAim(event);
+        const point = { x: aim.x, y: aim.y };
+        aim = null;
+        renderAim();
+        const field = fieldFromXY(point.x, point.y);
+        const target = boardSvg.querySelector(`.board-field[data-field="${field}"]`);
+        if (target) replayAnimation(target, "hit");
+        addHumanDart(field, point);
+    });
+    boardSvg.addEventListener("pointercancel", () => {
+        aim = null;
+        renderAim();
     });
 }
 
-function fieldFromScreen(element, clientX, clientY) {
-    const rect = element.getBoundingClientRect();
-    const scale = BOARD_RADIUS.board / (Math.min(rect.width, rect.height) / 2); // mm pro Pixel
-    const x = (clientX - rect.left - rect.width / 2) * scale;
-    const y = (clientY - rect.top - rect.height / 2) * scale;
-    return fieldFromXY(x, y);
+function moveAim(event) {
+    const p = boardPointFromClient(boardSvg, event.clientX, event.clientY);
+    Object.assign(aim, clampToBoard(p.x, p.y));
+    renderAim();
+}
+
+// Fadenkreuz und Lupe an der gedrückten Stelle
+function renderAim() {
+    const group = boardSvg.querySelector(".board-aim");
+    const lens = document.querySelector(".board-lens");
+    if (!aim) {
+        group.replaceChildren();
+        lens.hidden = true;
+        return;
+    }
+    const { x, y } = aim;
+    group.replaceChildren(
+        svgEl("circle", { cx: x, cy: y, r: 7, class: "calib-marker-ring" }),
+        svgEl("line", { x1: x - 13, y1: y, x2: x - 4, y2: y, class: "calib-marker-line" }),
+        svgEl("line", { x1: x + 4, y1: y, x2: x + 13, y2: y, class: "calib-marker-line" }),
+        svgEl("line", { x1: x, y1: y - 13, x2: x, y2: y - 4, class: "calib-marker-line" }),
+        svgEl("line", { x1: x, y1: y + 4, x2: x, y2: y + 13, class: "calib-marker-line" }));
+    group.setAttribute("class", "board-aim calib-marker");
+
+    if (!aim.lens) return;
+    const lensSvg = lens.querySelector("svg");
+    lensSvg.setAttribute("viewBox", `${x - LENS_SPAN_MM / 2} ${y - LENS_SPAN_MM / 2} ${LENS_SPAN_MM} ${LENS_SPAN_MM}`);
+    lens.querySelector(".board-lens-label").textContent = fieldLabel(fieldFromXY(x, y));
+    lens.hidden = false;
+
+    // über dem Finger, oben kein Platz: darunter
+    const wrap = lens.parentElement.getBoundingClientRect();
+    const screen = boardPointToClient(boardSvg, x, y);
+    const size = lens.offsetWidth || 130;
+    const gap = 60;
+    let left = screen.x - wrap.left - size / 2;
+    let top = screen.y - wrap.top - size - gap;
+    if (screen.y - size - gap < 8) top = screen.y - wrap.top + gap;
+    left = Math.max(-8, Math.min(left, wrap.width - size + 8));
+    lens.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+}
+
+// Darts der laufenden (oder gerade beendeten) Aufnahme genau an ihrer Stelle einzeichnen
+function renderBoardMarks() {
+    if (!boardSvg) return;
+    const turnDarts = state.turn.length > 0 ? state.turn.length : state.turns.at(-1)?.darts.length ?? 0;
+    const points = dartPoints();
+    const first = game.darts.length - turnDarts;
+    const marks = [];
+    for (let i = first; i < game.darts.length; i++) {
+        const field = game.darts[i];
+        const point = points[i] ?? (field === "M" ? null : fieldCenter(field));
+        if (!point) continue;
+        const isNew = i === game.darts.length - 1 && newDart !== null;
+        marks.push(svgEl("g", { class: `board-mark${isNew ? " mark-in" : ""}`, transform: `translate(${point.x} ${point.y})` }));
+        marks.at(-1).append(
+            svgEl("circle", { r: 11, class: "board-mark-dot" }),
+            svgEl("text", { class: "board-mark-num", y: 0.5 }));
+        marks.at(-1).lastChild.textContent = i - first + 1;
+    }
+    document.querySelectorAll(".board-marks").forEach((group, n) => {
+        group.replaceChildren(...(n === 0 ? marks : marks.map((m) => m.cloneNode(true))));
+    });
 }
 
 /********* Anzeige *********/
@@ -169,6 +276,7 @@ function fieldFromScreen(element, clientX, clientY) {
 function render() {
     state = replayGame(game);
     renderInfo();
+    renderBoardMarks();
     renderPlayers();
     if (game.mode === "CRICKET") renderCricketBoard();
     renderResult();
@@ -325,6 +433,7 @@ async function finishGame(rematch) {
     game.finishedAt = new Date().toISOString();
     game.winner = state.winner;
     game.legsWon = state.legsWon;
+    showLoader(rematch ? "Revanche wird gestartet …" : "Spiel wird gespeichert …");
     await saveQueue;
     await saveFinishedGame(game);
     await Store.remove("currentGame");
@@ -360,7 +469,8 @@ function scheduleBot() {
 
     botTimer = setTimeout(() => {
         botTimer = null;
-        addDart(simulateThrow(botTarget(state), player.level ?? settings.botLevel));
+        const hit = simulateThrowPoint(botTarget(state), player.level ?? settings.botLevel);
+        addDart(hit.field, hit);
     }, settings.botDelayMs);
 }
 

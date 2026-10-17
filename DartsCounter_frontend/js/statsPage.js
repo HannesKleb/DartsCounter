@@ -3,7 +3,7 @@
 let statGames = [];
 let knownForStats = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     showMode("X01-stats", "stats");
     document.getElementById("X01-stats").replaceChildren(...skeletonRows());
 
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelector('[data-group="stats"]').addEventListener("modechange", renderStats);
     document.getElementById("show-bots").addEventListener("change", renderStats);
     renderStats();
-});
+}));
 
 function renderStats() {
     const panel = document.querySelector('[data-group="stats"] [data-panel]:not([style*="none"])');

@@ -5,7 +5,7 @@ let lobby = [];          // Spieler für das nächste Spiel
 let knownPlayers = [];
 let newPlayerIndex = null; // nur der neu hinzugefügte Spieler wird animiert
 
-document.addEventListener("DOMContentLoaded", initHome);
+document.addEventListener("DOMContentLoaded", () => runPage(initHome));
 
 async function initHome() {
     lobby = readLobby();

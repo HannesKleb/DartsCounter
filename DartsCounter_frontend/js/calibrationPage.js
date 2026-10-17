@@ -16,7 +16,7 @@ let busy = false;
 let boardSvg = null;
 let lensSvg = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     boardSvg = createBoardSvg();
     boardSvg.classList.add("calib-svg");
     boardSvg.append(svgEl("g", { class: "calib-points" }), svgEl("g", { class: "calib-marker" }));
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     await refresh();
-});
+}));
 
 /********* Backend *********/
 
@@ -449,18 +449,11 @@ function onKey(event) {
 
 // Bildschirm <-> Scheiben-Koordinaten (mm, wie die SVG-Koordinaten von createBoardSvg)
 function toBoard(clientX, clientY) {
-    const point = new DOMPoint(clientX, clientY).matrixTransform(boardSvg.getScreenCTM().inverse());
-    return { x: point.x, y: point.y };
+    return boardPointFromClient(boardSvg, clientX, clientY);
 }
 
 function toScreen(x, y) {
-    return new DOMPoint(x, y).matrixTransform(boardSvg.getScreenCTM());
-}
-
-function clampToBoard(x, y) {
-    const r = Math.hypot(x, y);
-    const max = BOARD_RADIUS.board;
-    return r > max ? { x: (x / r) * max, y: (y / r) * max } : { x, y };
+    return boardPointToClient(boardSvg, x, y);
 }
 
 /********* Hilfen *********/

@@ -2,14 +2,14 @@
 
 let allGames = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     showMode("X01-games", "games");
     document.getElementById("X01-games").replaceChildren(...skeletonRows());
 
     allGames = await loadGames();
     document.querySelector('[data-group="games"]').addEventListener("modechange", renderGames);
     renderGames();
-});
+}));
 
 function renderGames() {
     const panel = document.querySelector('[data-group="games"] [data-panel]:not([style*="none"])');

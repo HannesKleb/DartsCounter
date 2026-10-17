@@ -2,7 +2,7 @@
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     let custom = "";
     try {
         custom = localStorage.getItem("backendUrl") ?? "";
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateBackendStatus();
     renderAccountSection();
     document.addEventListener("authchange", renderAccountSection);
-});
+}));
 
 async function renderAccountSection() {
     const user = await Auth.current();
@@ -78,7 +78,7 @@ function renderSyncStatus() {
 
 async function syncNow() {
     document.getElementById("sync-status").textContent = "Lade hoch …";
-    await Store.sync({ force: true });
+    await withButtonLoading(document.getElementById("sync-now"), () => Store.sync({ force: true }));
     renderSyncStatus();
 }
 

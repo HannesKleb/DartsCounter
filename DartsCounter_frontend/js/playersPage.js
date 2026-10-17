@@ -3,7 +3,7 @@
 let players = [];
 let games = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     document.getElementById("new-player-btn").addEventListener("click", addKnownPlayer);
     document.getElementById("new-player").addEventListener("keydown", (event) => {
         if (event.key === "Enter") addKnownPlayer();
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     [players, games] = await Promise.all([loadKnownPlayers(), loadGames()]);
     renderPlayers();
     animateList(document.querySelectorAll("#known-player-list .player-item"));
-});
+}));
 
 function renderPlayers() {
     const listEl = document.getElementById("known-player-list");

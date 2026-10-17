@@ -1,6 +1,6 @@
 /********* Anmelden / erster Start *********/
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => runPage(async () => {
     let setup = false;
     try {
         setup = await Auth.setupNeeded();
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (setup) renderSetup();
     else renderLogin();
-});
+}));
 
 // über den Tunnel (HTTPS) oder das Backend hat schon eine Anmeldung verlangt
 function fromOutside() {
@@ -43,7 +43,8 @@ function renderLogin() {
         event.preventDefault();
         error.textContent = "";
         try {
-            await Auth.login(nameInput.value, codeInput.value);
+            await withButtonLoading(event.submitter, () => Auth.login(nameInput.value, codeInput.value));
+            showLoader("Anmelden …");
             bar("index.html");
         } catch (err) {
             error.textContent = err.message;
@@ -77,7 +78,7 @@ function renderSetup() {
         event.preventDefault();
         error.textContent = "";
         try {
-            const { account, code } = await Auth.setupAdmin(nameInput.value);
+            const { account, code } = await withButtonLoading(event.submitter, () => Auth.setupAdmin(nameInput.value));
             document.getElementById("auth-box").replaceChildren(
                 h("p", { text: "Dein Admin-Konto ist angelegt. Hebe den Code gut auf, damit meldest du dich auf anderen Geräten an." }),
                 accessCard(account, code, () => bar("accounts.html")));

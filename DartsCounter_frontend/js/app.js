@@ -25,6 +25,95 @@ function animateList(elements) {
     [...elements].forEach((el) => el.classList.add("list-in"));
 }
 
+/********* Ladebildschirm *********/
+
+// Jede Seite zeigt beim Öffnen den Ladebildschirm, bis sie pageReady() aufruft.
+// Er erscheint erst nach kurzer Zeit (schnelle Seiten flackern nicht) und bleibt dann kurz sichtbar.
+const LOADER_DELAY_MS = 200;
+const LOADER_MIN_MS = 300;
+const LOADER_SLOW_MS = 2000;
+const LOADER_MAX_MS = 15000; // Sicherheitsnetz, falls eine Seite pageReady() nie erreicht
+
+const loader = { el: null, timers: [], shownAt: 0 };
+
+function showLoader(text = "Lädt …") {
+    clearLoaderTimers();
+    if (!loader.el) {
+        loader.el = h("div", { class: "page-loader", role: "status", "aria-live": "polite" },
+            h("div", { class: "page-loader-box" },
+                loaderBoardSvg(),
+                h("span", { class: "page-loader-text" })));
+        document.body.append(loader.el);
+    }
+    loader.el.querySelector(".page-loader-text").textContent = text;
+    loader.timers.push(setTimeout(() => {
+        loader.el.classList.add("visible");
+        loader.shownAt = Date.now();
+    }, LOADER_DELAY_MS));
+    loader.timers.push(setTimeout(() => {
+        loader.el.querySelector(".page-loader-text").textContent = "Verbinde mit dem Pi …";
+    }, LOADER_SLOW_MS));
+    loader.timers.push(setTimeout(hideLoader, LOADER_MAX_MS));
+}
+
+function hideLoader() {
+    clearLoaderTimers();
+    if (!loader.el?.classList.contains("visible")) return;
+    const wait = Math.max(0, LOADER_MIN_MS - (Date.now() - loader.shownAt));
+    loader.timers.push(setTimeout(() => loader.el.classList.remove("visible"), wait));
+}
+
+function clearLoaderTimers() {
+    loader.timers.forEach(clearTimeout);
+    loader.timers = [];
+}
+
+// Seite ist fertig aufgebaut
+function pageReady() {
+    hideLoader();
+}
+
+// Aufbau einer Seite: Ladebildschirm bis zum Ende, auch bei Fehlern
+async function runPage(init) {
+    try {
+        await init();
+    } finally {
+        pageReady();
+    }
+}
+
+function loaderBoardSvg() {
+    const svg = svgElement("svg", { viewBox: "0 0 56 56", class: "page-loader-board", "aria-hidden": "true" });
+    svg.append(
+        svgElement("circle", { cx: 28, cy: 28, r: 24, class: "ring" }),
+        svgElement("circle", { cx: 28, cy: 28, r: 24, class: "arc" }),
+        svgElement("circle", { cx: 28, cy: 28, r: 5, class: "bull" }));
+    return svg;
+}
+
+function svgElement(tag, attrs) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+    return el;
+}
+
+// Button zeigt einen Kreisel, solange die Aktion läuft
+async function withButtonLoading(button, action) {
+    if (!button) return action();
+    button.classList.add("loading");
+    button.setAttribute("aria-busy", "true");
+    try {
+        return await action();
+    } finally {
+        button.classList.remove("loading");
+        button.removeAttribute("aria-busy");
+    }
+}
+
+showLoader();
+// zurück-Taste (bfcache): Seite ist schon fertig
+window.addEventListener("pageshow", (event) => { if (event.persisted) hideLoader(); });
+
 // Platzhalter, solange Daten geladen werden
 function skeletonRows(count = 3) {
     return [...Array(count)].map(() => h("div", { class: "skeleton" }));
@@ -131,6 +220,7 @@ async function startNewGame(mode, options, players) {
         startedAt: new Date().toISOString(),
         darts: []
     };
+    showLoader("Spiel wird gestartet …");
     await Store.set("currentGame", game);
     navigate(`../gameModes/${MODES[mode].page}`);
 }
