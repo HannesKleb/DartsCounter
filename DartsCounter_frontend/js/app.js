@@ -70,6 +70,17 @@ function h(tag, attrs = {}, ...children) {
     return el;
 }
 
+// Strich-Icon (24er Raster) für Knöpfe ohne Text; Pfade wie in den HTML-Seiten
+function icon(pathData) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    svg.append(path);
+    return svg;
+}
+
 function newId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
@@ -82,6 +93,15 @@ function formatDate(iso) {
 }
 
 const BOT_LEVELS = { easy: "Leicht", medium: "Mittel", hard: "Schwer" };
+
+// Kreis mit den ersten zwei Buchstaben vor dem Namen (Bots gestrichelt mit "Bot")
+function avatar(player) {
+    return h("span", {
+        class: `avatar${player.bot ? " bot" : ""}`,
+        "aria-hidden": "true",
+        text: player.bot ? "Bot" : player.name.slice(0, 2).toUpperCase()
+    });
+}
 
 function playerLabel(player) {
     return player.bot ? `${player.name} (Bot, ${BOT_LEVELS[player.level] ?? "Mittel"})` : player.name;

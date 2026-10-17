@@ -328,6 +328,12 @@ option {
         background: var(--danger-soft);
     }
 }
+.player-item .icon-btn {
+    width: var(--control);
+    padding: 0;
+    border-color: transparent;
+    color: var(--muted);
+}
 .player-item .delete-btn {
     color: var(--danger-ink);
     border-color: transparent;
@@ -444,6 +450,17 @@ option {
     box-shadow: inset 0 0 0 1px var(--accent);
     color: var(--text);
     font-weight: 600;
+}
+/* Filter-Tabs (Statistik, Verlauf): eine Zeile, am Handy seitlich wischbar */
+.content > .selection-btn {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(-1 * var(--space-2));
+    padding-inline: var(--space-2);
+}
+.content > .selection-btn button {
+    flex-shrink: 0;
 }
 /* Umschalter (z. B. Tastatur/Scheibe) */
 .selection-btn.segmented {
@@ -608,9 +625,30 @@ option {
 }
 .player-item .player-name {
     flex: 1;
+    min-width: 0;
     font-weight: 500;
+    overflow-wrap: anywhere;
+}
+.avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    color: var(--text-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.avatar.bot {
+    background: transparent;
+    border: 1px dashed var(--line-strong);
+    font-size: var(--text-xs);
 }
 .player-index {
+    min-width: 12px;
     font-family: var(--font-display);
     font-weight: 700;
     color: var(--muted);
@@ -651,8 +689,22 @@ option {
     font-weight: 600;
     color: var(--text-2);
 }
-.stats-table tbody th {
+.stats-table tbody th,
+.stats-table thead th:first-child {
     text-align: left;
+    font-weight: 600;
+}
+.stats-table tr > :first-child {
+    position: sticky;
+    left: 0;
+    background: var(--surface-2);
+}
+.stats-table thead tr > :first-child {
+    background: var(--surface-3);
+}
+.stats-table td {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
     font-weight: 600;
 }
 .stats-table tbody tr + tr > * {
@@ -674,6 +726,25 @@ option {
     border: none;
     background: none;
     text-align: left;
+}
+.game-card-players {
+    flex: 1 1 100%;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.2;
+}
+.game-card-date {
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.game-card-winner {
+    padding: 2px 12px;
+    border-radius: var(--pill);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
 }
 .game-details {
     padding: 0 var(--space-2) var(--space-2);

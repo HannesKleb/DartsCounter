@@ -163,11 +163,16 @@ function renderLobby() {
     }
     listEl.replaceChildren(...lobby.map((player, index) =>
         h("div", { class: `player-item${index === newPlayerIndex ? " list-in" : ""}` },
-            h("span", { class: "player-index", text: `#${index + 1}` }),
-            h("span", { class: "player-name", text: playerLabel(player) }),
+            h("span", { class: "player-index", text: index + 1 }),
+            avatar(player),
+            h("span", { class: "player-name" },
+                player.name,
+                player.bot ? h("span", { class: "hint", text: ` · ${BOT_LEVELS[player.level] ?? "Mittel"}` }) : null),
             h("span", { class: "player-actions" },
-                h("button", { text: "Hoch", title: "Nach oben schieben", disabled: index === 0, onclick: () => movePlayer(index) }),
-                h("button", { class: "delete-btn", text: "Löschen", onclick: () => removePlayer(index) })))));
+                h("button", { class: "icon-btn", "aria-label": `${player.name} nach oben`, title: "Nach oben schieben", disabled: index === 0, onclick: () => movePlayer(index) },
+                    icon("M12 19V5M5 12l7-7 7 7")),
+                h("button", { class: "icon-btn delete-btn", "aria-label": `${player.name} entfernen`, title: "Entfernen", onclick: () => removePlayer(index) },
+                    icon("M6 6l12 12M18 6L6 18"))))));
     newPlayerIndex = null;
 }
 
