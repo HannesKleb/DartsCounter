@@ -20,6 +20,7 @@ import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
 import org.opencv.videoio.Videoio;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,26 +28,40 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ArrowDetection {
-    // Grenzen, ab wann eine Kontur als Pfeil zählt
+    // Grenzen, ab wann eine Kontur als Pfeil zählt. Flächen gelten für ein 1920 px breites Bild
+    // und werden für kleinere Bilder mitskaliert.
     private static final double MAX_RATIO = 5;
     private static final double MIN_RATIO = 1.4;
     private static final double MAX_AREA = 160000;
     private static final double MIN_AREA = 14000;
+    private static final double REFERENCE_WIDTH = 1920;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final ThrowCollector collector;
     private final int widthPx;
     private final int heightPx;
+    private final int fps;
+    private final int processWidth;
     private final boolean saveFrames;
 
+    @Autowired
     public ArrowDetection(ThrowCollector collector,
                           @Value("${dartscounter.camera.width-px}") int widthPx,
                           @Value("${dartscounter.camera.height-px}") int heightPx,
+                          @Value("${dartscounter.camera.fps:15}") int fps,
+                          @Value("${dartscounter.detection.process-width:640}") int processWidth,
                           @Value("${dartscounter.debug.save-frames:false}") boolean saveFrames) {
         this.collector = collector;
         this.widthPx = widthPx;
         this.heightPx = heightPx;
+        this.fps = fps;
+        this.processWidth = processWidth;
         this.saveFrames = saveFrames;
+    }
+
+    // für Tests
+    ArrowDetection(ThrowCollector collector, int widthPx, int heightPx, boolean saveFrames) {
+        this(collector, widthPx, heightPx, 15, widthPx, saveFrames);
     }
 
     /** @return true, wenn neu gestartet; false, wenn die Erkennung schon lief */
@@ -78,6 +93,7 @@ public class ArrowDetection {
         capture.set(Videoio.CAP_PROP_FOURCC, VideoWriter.fourcc('M', 'J', 'P', 'G'));
         capture.set(Videoio.CAP_PROP_FRAME_WIDTH, widthPx);
         capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, heightPx);
+        capture.set(Videoio.CAP_PROP_FPS, fps); // weniger Bilder pro Sekunde entlasten den Pi
         System.out.println("Kamera " + (camera + 1) + ": " + capture.get(Videoio.CAP_PROP_FRAME_WIDTH) + "x"
                 + capture.get(Videoio.CAP_PROP_FRAME_HEIGHT));
 
@@ -88,23 +104,40 @@ public class ArrowDetection {
 
         BackgroundSubtractor backSub = Video.createBackgroundSubtractorMOG2();
         Mat frame = new Mat();
+        Mat small = new Mat();
         Mat fgMask = new Mat();
         Mat fgMaskBlur = new Mat();
         Mat fgCleaned = new Mat();
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10, 10));
-        Size blurSize = new Size(7, 7);
+        Mat kernel = null;
+        Size blurSize = null;
+        double toCameraPx = 1; // verkleinerte Spalte -> Spalte im Kamerabild
         int frameCount = 0;
         boolean dartVisible = false;
 
         try {
             while (running.get() && capture.read(frame)) {
-                backSub.apply(frame, fgMask);
+                // auf einem verkleinerten Bild rechnen: viel weniger Arbeit für den Pi, Spalte wird zurückgerechnet
+                Mat work = frame;
+                if (frame.cols() > processWidth) {
+                    toCameraPx = (double) frame.cols() / processWidth;
+                    Imgproc.resize(frame, small, new Size(processWidth, Math.round(frame.rows() / toCameraPx)), 0, 0, Imgproc.INTER_AREA);
+                    work = small;
+                }
+                if (kernel == null) {
+                    // Filtergrößen wie bei 1920 px, passend verkleinert
+                    double k = work.cols() / REFERENCE_WIDTH;
+                    blurSize = new Size(Math.max(3, Math.round(7 * k)), Math.max(3, Math.round(7 * k)));
+                    long side = Math.max(3, Math.round(10 * k));
+                    kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(side, side));
+                }
+                backSub.apply(work, fgMask);
                 if (frameCount % 2 == 0) {
                     // enhance IMG
                     Imgproc.blur(fgMask, fgMaskBlur, blurSize);
                     Imgproc.morphologyEx(fgMaskBlur, fgCleaned, Imgproc.MORPH_OPEN, kernel);
 
                     Double dartX = showsDarts(fgCleaned);
+                    if (dartX != null) dartX *= toCameraPx;
                     // nur melden, wenn der Pfeil neu auftaucht, nicht in jedem Frame
                     if (dartX != null && !dartVisible) collector.report(camera, dartX);
                     dartVisible = dartX != null;
@@ -119,16 +152,19 @@ public class ArrowDetection {
         } finally {
             capture.release();
             frame.release();
+            small.release();
             fgMask.release();
             fgMaskBlur.release();
             fgCleaned.release();
-            kernel.release();
+            if (kernel != null) kernel.release();
         }
         System.out.println("Kamera " + (camera + 1) + ": beendet");
     }
 
     /** @return Pixelspalte des Pfeils (Mitte der zwei obersten Ecken) oder null, wenn keiner zu sehen ist */
     public Double showsDarts(Mat image) {
+        double k = image.cols() / REFERENCE_WIDTH;
+        double minArea = MIN_AREA * k * k, maxArea = MAX_AREA * k * k;
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(image, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -147,7 +183,7 @@ public class ArrowDetection {
             double minSide = Math.min(rect.size.width, rect.size.height);
             if (minSide <= 0) continue; // Division durch 0 vermeiden
             double ratio = Math.max(rect.size.width, rect.size.height) / minSide;
-            if (MIN_RATIO < ratio && ratio < MAX_RATIO && MIN_AREA < area && area < MAX_AREA && area > bestArea) {
+            if (MIN_RATIO < ratio && ratio < MAX_RATIO && minArea < area && area < maxArea && area > bestArea) {
                 bestArea = area;
                 best = rect;
             }

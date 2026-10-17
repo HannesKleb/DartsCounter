@@ -64,6 +64,18 @@ class ArrowDetectionImageTest {
     }
 
     @Test
+    void smallImagesUseScaledLimits() {
+        // gleicher Pfeil wie oben, aber im 640x480-Bild (ein Drittel so breit)
+        Mat image = Mat.zeros(480, 640, CvType.CV_8UC1);
+        fillRotatedRect(image, new Point(400, 200), new Size(37, 110), 0);
+        assertEquals(400, detection.showsDarts(image), 2);
+
+        Mat tiny = Mat.zeros(480, 640, CvType.CV_8UC1);
+        fillRotatedRect(tiny, new Point(400, 200), new Size(13, 40), 0); // zu klein für einen Pfeil
+        assertNull(detection.showsDarts(tiny));
+    }
+
+    @Test
     void picksDartNotBiggerNoise() {
         Mat image = mask();
         fillRotatedRect(image, new Point(1500, 500), new Size(300, 300), 0); // großer Fleck, falsche Form
