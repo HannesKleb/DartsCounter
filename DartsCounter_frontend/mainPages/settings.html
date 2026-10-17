@@ -26,11 +26,16 @@
         <section class="settings-section">
             <h3>Verbindung</h3>
             <label>Backend-Adresse (leer = automatisch)
-                <input type="text" id="backend-url" placeholder="http://darts-counter:8080">
+                <input type="text" id="backend-url" placeholder="z. B. https://darts.deine-domain.de">
             </label>
             <div class="settings-row">
                 <button class="input-btn" id="backend-save">Speichern &amp; testen</button>
                 <span id="backend-status" class="hint"></span>
+            </div>
+            <p class="hint" id="backend-source"></p>
+            <div class="settings-row">
+                <span id="sync-status" class="hint"></span>
+                <button class="input-btn" id="sync-now" hidden>Jetzt hochladen</button>
             </div>
         </section>
         <section class="settings-section">

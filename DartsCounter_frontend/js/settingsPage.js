@@ -25,6 +25,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("delete-games").addEventListener("click", deleteAllGames);
     document.getElementById("delete-players").addEventListener("click", deleteAllPlayers);
 
+    document.getElementById("sync-now").addEventListener("click", syncNow);
+    document.addEventListener("syncchange", renderSyncStatus);
     updateBackendStatus();
     renderAccountSection();
     document.addEventListener("authchange", renderAccountSection);
@@ -54,10 +56,30 @@ async function renderAccountSection() {
 
 async function updateBackendStatus() {
     const status = document.getElementById("backend-status");
+    document.getElementById("backend-source").textContent = `Benutzt: ${getBackendUrl()} (${backendUrlSource()})`;
     status.textContent = "Teste Verbindung …";
     const ok = await testBackend();
     status.textContent = ok ? `Verbunden mit ${getBackendUrl()}` : `Keine Verbindung zu ${getBackendUrl()}`;
     status.classList.toggle("error", !ok);
+    renderSyncStatus();
+}
+
+// Daten, die nur in diesem Browser liegen und noch hochgeladen werden müssen
+function renderSyncStatus() {
+    const count = Store.pendingCount();
+    const line = document.getElementById("sync-status");
+    const button = document.getElementById("sync-now");
+    line.textContent = count
+        ? `${count} ${count === 1 ? "Bereich wartet" : "Bereiche warten"} auf das Hochladen (nur in diesem Browser gespeichert).`
+        : "Alles hochgeladen.";
+    line.classList.toggle("error", count > 0);
+    button.hidden = count === 0;
+}
+
+async function syncNow() {
+    document.getElementById("sync-status").textContent = "Lade hoch …";
+    await Store.sync({ force: true });
+    renderSyncStatus();
 }
 
 function saveBackend() {
@@ -103,9 +125,9 @@ async function importData(event) {
             throw new Error("Keine DartsCounter-Sicherung");
         }
         if (!confirm(`Backup einspielen? Aktuelle Spieler und Spiele werden ersetzt (${data.games.length} Spiele).`)) return;
-        await Store.set("players", data.players);
-        await Store.set("games", data.games);
-        if (data.settings) await Store.set("settings", data.settings);
+        await Store.set("players", data.players, { replace: true });
+        await Store.set("games", data.games, { replace: true });
+        if (data.settings) await Store.set("settings", data.settings, { replace: true });
         status.textContent = "Backup eingespielt.";
     } catch (error) {
         status.textContent = `Fehler: ${error.message}`;
@@ -114,12 +136,12 @@ async function importData(event) {
 
 async function deleteAllGames() {
     if (!confirm("Wirklich ALLE gespeicherten Spiele löschen? Das kann nicht rückgängig gemacht werden.")) return;
-    await Store.set("games", []);
+    await Store.set("games", [], { replace: true });
     document.getElementById("data-status").textContent = "Alle Spiele gelöscht.";
 }
 
 async function deleteAllPlayers() {
     if (!confirm("Wirklich alle Spieler löschen? Gespielte Spiele bleiben erhalten.")) return;
-    await Store.set("players", []);
+    await Store.set("players", [], { replace: true });
     document.getElementById("data-status").textContent = "Alle Spieler gelöscht.";
 }

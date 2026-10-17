@@ -28,6 +28,17 @@ Das Frontend sucht das Backend automatisch unter `http://<gleicher Rechner>:8080
 
 Spieler, Spiele und Einstellungen speichert das Backend als JSON in `~/dartscounter-data` (änderbar über `dartscounter.data-dir` in `application.properties`). Ist das Backend nicht erreichbar, speichert das Frontend nur im Browser und zeigt einen Hinweis an. Backup: Einstellungen → „Backup herunterladen“.
 
+### Abgleich (keine Daten verlieren)
+
+Ist das Backend nicht erreichbar oder verlangt es eine Anmeldung (401), speichert das Frontend im Browser und merkt sich den Schlüssel als ausstehend (`localStorage` → `store.pending`). Sobald das Backend wieder antwortet und den Zugriff erlaubt (beim Laden einer Seite, alle 30 Sekunden, direkt nach dem Anmelden), wird abgeglichen:
+
+- `games`: lokale und Server-Liste werden nach `id` zusammengeführt, kein Spiel fällt weg. Bei gleicher `id` gewinnt das Spiel mit mehr Würfen, sonst das später beendete.
+- `players`: nach Namen zusammengeführt (Groß-/Kleinschreibung egal).
+- `settings` und `currentGame`: der lokale Stand gewinnt.
+- Bewusst gelöschte Spiele und Spieler merkt sich das Frontend (`store.removed.<key>`), damit sie beim Zusammenführen nicht zurückkommen. „Alle Spiele löschen“, „Alle Spieler löschen“ und „Backup einspielen“ ersetzen den Server-Stand.
+- Der Abgleich läuft nie doppelt. Eine lokale Kopie, die noch aussteht, wird beim Lesen nicht vom Server überschrieben.
+- In den Einstellungen steht, ob noch etwas aussteht („Jetzt hochladen“).
+
 
 ## Konten
 
@@ -71,3 +82,30 @@ Angemeldete Anfragen schicken `Authorization: Bearer <token>`. Fehler kommen als
   - Die Adresse wird nur für diese Prüfung angesehen, nie gespeichert oder geloggt.
 - Einstellbar in `application.properties` über `dartscounter.data.require-login` und `dartscounter.services.require-login`: `tunnel` (Standard), `always` oder `never`.
 - Nicht geschützt sind `/api/auth/*` (die Anmeldung muss erreichbar sein) und `/api/hallo`.
+
+### Cloudflare Tunnel einrichten
+
+Von unterwegs läuft alles über eine Adresse mit HTTPS (z. B. `https://darts.deine-domain.de`). Der Tunnel leitet `/api/` und `/services/` an das Backend, alles andere an den Webserver mit dem Frontend. Das Frontend erkennt HTTPS und benutzt dann automatisch dieselbe Domain (kein Port 8080). Im Heimnetz (`http://darts-counter`) bleibt es bei Port 8080.
+
+`config.yml` (Tunnel-ID und Domain ersetzen):
+
+```yaml
+tunnel: <TUNNEL-ID>
+credentials-file: /etc/cloudflared/<TUNNEL-ID>.json
+
+ingress:
+  # Backend (Spring Boot)
+  - hostname: darts.deine-domain.de
+    path: ^/(api|services)/
+    service: http://localhost:8080
+  # Frontend (Webserver mit /var/www/html)
+  - hostname: darts.deine-domain.de
+    service: http://localhost:80
+  # alles andere ablehnen
+  - service: http_status:404
+```
+
+- Liegt auf dem Pi unter `/etc/cloudflared/config.yml`, wenn cloudflared als Dienst installiert ist (`sudo cloudflared service install`). Startet man cloudflared von Hand, liegt sie unter `~/.cloudflared/config.yml`.
+- Prüfen: `cloudflared tunnel ingress validate` und `cloudflared tunnel ingress rule https://darts.deine-domain.de/api/hallo` (muss die Backend-Regel treffen).
+- Neu starten nach Änderungen: `sudo systemctl restart cloudflared`, Status mit `systemctl status cloudflared`.
+- Eine eigene Backend-Adresse lässt sich in den Einstellungen eintragen. Leer lassen ist der Normalfall.

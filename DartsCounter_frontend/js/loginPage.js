@@ -11,6 +11,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     else renderLogin();
 });
 
+// über den Tunnel (HTTPS) oder das Backend hat schon eine Anmeldung verlangt
+function fromOutside() {
+    try {
+        if (sessionStorage.getItem("loginRequired")) return true;
+    } catch {
+        // egal
+    }
+    return window.location.protocol === "https:";
+}
+
 function errorLine() {
     return h("p", { class: "form-error", role: "alert" });
 }
@@ -45,7 +55,13 @@ function renderLogin() {
         h("p", { class: "hint", text: "Den Zugangscode bekommst du vom Admin." }),
         form,
         error,
-        h("button", { class: "link-btn", text: "Ohne Anmeldung weiter", onclick: () => bar("index.html") }));
+        h("button", { class: "link-btn", text: "Ohne Anmeldung weiter", onclick: () => bar("index.html") }),
+        fromOutside()
+            ? h("p", {
+                class: "hint",
+                text: "Von unterwegs bleiben Spiele ohne Anmeldung nur in diesem Browser. Nach dem Anmelden werden sie hochgeladen."
+            })
+            : null);
     nameInput.focus();
 }
 

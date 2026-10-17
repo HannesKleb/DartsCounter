@@ -194,12 +194,14 @@ async function authApi(path, { method = "GET", body } = {}) {
 
     let response;
     try {
+        // Anmeldung und erster Start: Code-Hash auf dem Pi und Tunnel brauchen länger
+        const slow = path.startsWith("/api/auth/login") || path.startsWith("/api/auth/setup");
         response = await backendFetch(path, {
             method,
             headers,
             cache: "no-store",
             body: body === undefined ? undefined : JSON.stringify(body)
-        }, { force: true });
+        }, { force: true, timeoutMs: slow ? AUTH_TIMEOUT_MS : BACKEND_TIMEOUT_MS });
     } catch {
         throw new Error("Backend nicht erreichbar. Bitte später erneut versuchen.");
     }
@@ -215,6 +217,7 @@ async function authApi(path, { method = "GET", body } = {}) {
     if (!response.ok) {
         // Token abgelaufen oder Code neu gesetzt: abmelden
         if (response.status === 401 && path !== "/api/auth/login") {
+            if (token) showOfflineBanner(true, "expired");
             writeToken(null);
             currentPromise = null;
         }
@@ -389,6 +392,8 @@ const Auth = {
             body: { name: String(name).trim(), code: String(code) }
         });
         writeToken(token);
+        // was ohne Anmeldung nur im Browser lag, jetzt hochladen
+        await Store.sync({ force: true });
         return account;
     },
 
@@ -525,6 +530,13 @@ async function renderUserMenu() {
     }
     header.append(menu);
 }
+
+// Store hat ein 401 bekommen und das Token gelöscht: Anzeige aktualisieren
+document.addEventListener("authexpired", () => {
+    currentPromise = null;
+    if (document.body.dataset.noUserMenu === undefined) renderUserMenu();
+    document.dispatchEvent(new CustomEvent("authchange"));
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     if (document.body.dataset.noUserMenu === undefined) renderUserMenu();
