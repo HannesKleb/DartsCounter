@@ -31,6 +31,9 @@ public class ArrowDetection {
     private final int stableFrames;
     private final boolean tipAtTop;
     private final boolean lockWhiteBalance;
+    private final boolean fastDecodeEnabled;
+    private final String[] startControls;
+    private final String[] lockControls;
     private final boolean saveFrames;
 
     public ArrowDetection(ThrowCollector collector,
@@ -41,6 +44,9 @@ public class ArrowDetection {
                           @Value("${dartscounter.detection.stable-frames:3}") int stableFrames,
                           @Value("${dartscounter.camera.tip:top}") String tip,
                           @Value("${dartscounter.camera.lock-white-balance:true}") boolean lockWhiteBalance,
+                          @Value("${dartscounter.camera.fast-decode:true}") boolean fastDecodeEnabled,
+                          @Value("${dartscounter.camera.controls-start:}") String[] startControls,
+                          @Value("${dartscounter.camera.controls-lock:}") String[] lockControls,
                           @Value("${dartscounter.debug.save-frames:false}") boolean saveFrames) {
         this.collector = collector;
         this.widthPx = widthPx;
@@ -50,6 +56,9 @@ public class ArrowDetection {
         this.stableFrames = stableFrames;
         this.tipAtTop = !"bottom".equalsIgnoreCase(tip);
         this.lockWhiteBalance = lockWhiteBalance;
+        this.fastDecodeEnabled = fastDecodeEnabled;
+        this.startControls = startControls;
+        this.lockControls = lockControls;
         this.saveFrames = saveFrames;
     }
 
@@ -73,6 +82,31 @@ public class ArrowDetection {
 
     public CameraDiagnostics diagnostics(int camera) {
         return diagnostics.get(camera);
+    }
+
+    /**
+     * Stellt Kamera-Regler mit v4l2-ctl ein (z. B. "white_balance_automatic=0"). Kameras benennen die Regler
+     * unterschiedlich; unbekannte Namen werden übersprungen, deshalb dürfen mehrere Varianten in der Liste stehen.
+     */
+    static void setControls(int camera, String device, String[] controls) {
+        if (controls == null) return;
+        StringBuilder ok = new StringBuilder();
+        for (String control : controls) {
+            String c = control.trim();
+            if (c.isEmpty()) continue;
+            try {
+                Process p = new ProcessBuilder("v4l2-ctl", "-d", device, "-c", c).redirectErrorStream(true).start();
+                p.getInputStream().readAllBytes();
+                if (p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS) && p.exitValue() == 0) ok.append(' ').append(c);
+            } catch (java.io.IOException e) {
+                System.out.println("Kamera " + (camera + 1) + ": v4l2-ctl fehlt (sudo apt install v4l-utils)");
+                return;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+        if (!ok.isEmpty()) System.out.println("Kamera " + (camera + 1) + ": eingestellt" + ok);
     }
 
     /**
@@ -113,7 +147,10 @@ public class ArrowDetection {
         capture.set(Videoio.CAP_PROP_FPS, fps); // weniger Bilder pro Sekunde entlasten den Pi
         // Schnell entpacken: die rohen JPEG-Daten holen und gleich in halber Größe entpacken (etwa doppelt so schnell),
         // wenn ohnehin auf halber Breite gerechnet wird. Liefert die Kamera keine Rohdaten, normal weiter.
-        boolean fastDecode = live && processWidth * 2 <= widthPx && capture.set(Videoio.CAP_PROP_CONVERT_RGB, 0);
+        boolean fastDecode = fastDecodeEnabled && live && processWidth * 2 <= widthPx
+                && capture.set(Videoio.CAP_PROP_CONVERT_RGB, 0);
+        String device = live ? "/dev/video" + source : null;
+        if (device != null) setControls(camera, device, startControls); // z. B. 50-Hz-Netz gegen Flimmern
         System.out.println("Kamera " + (camera + 1) + ": " + capture.get(Videoio.CAP_PROP_FRAME_WIDTH) + "x"
                 + capture.get(Videoio.CAP_PROP_FRAME_HEIGHT) + (fastDecode ? ", schnelles Entpacken" : ""));
 
@@ -174,7 +211,10 @@ public class ArrowDetection {
                     nextFrameNs += intervalNs;
                 }
                 // Weißabgleich nach der Anlaufzeit festhalten: sonst springt das Bild und alles gilt als Bewegung
-                if (live && lockWhiteBalance && frameCount == fps * 2) capture.set(Videoio.CAP_PROP_AUTO_WB, 0);
+                if (live && lockWhiteBalance && frameCount == fps * 2) {
+                    capture.set(Videoio.CAP_PROP_AUTO_WB, 0);
+                    setControls(camera, device, lockControls); // direkt an der Kamera, wirkt zuverlässiger
+                }
 
                 // Spalten immer in der vollen Kamera-Auflösung melden (die Kalibrierung rechnet damit)
                 double toFullPx = frame.cols() < widthPx ? (double) widthPx / frame.cols() : 1;

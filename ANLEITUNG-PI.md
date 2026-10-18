@@ -333,6 +333,8 @@ Gespeicherte Daten (Spieler, Spiele, Konten, Kalibrierung) liegen auf dem Pi in 
 | `vcgencmd get_throttled` nicht `0x0` | zu wenig Strom | Stärkeres Netzteil, USB-Hub mit eigenem Netzteil für die Kameras. |
 | `fswebcam` / Kamera: *Device or resource busy* | Backend benutzt die Kamera gerade | `sudo systemctl stop darts`, danach wieder `start`. |
 | Kalibrierung erkennt Würfe, obwohl keiner geworfen wurde | Bewegung im Raum hinter der Scheibe, Licht, angestoßene Kamera | Siehe [6.3](#63-kameras-ausrichten): Surround und gleichmäßiges Licht, nichts hinter der Scheibe bewegen. In `application.properties` `dartscounter.detection.stable-frames` erhöhen (z. B. 5), dann [Update](#7-updates-einspielen). Werden echte Würfe übersehen: Wert senken. |
+| Kamerabilder wechseln ständig die Farbe, flimmern oder haben Streifen | Automatischer Weißabgleich, 50-Hz-Lampenlicht | Das Backend stellt die Kameras beim Start mit `v4l2-ctl` ein (`dartscounter.camera.controls-*`). In der Konsole muss `Kamera 1: eingestellt …` stehen. Fehlt das: `v4l2-ctl -d /dev/video0 --list-ctrls` ausführen und die Reglernamen in `application.properties` ergänzen. |
+| Bilder zerrissen oder verrutscht | Kamera liefert kaputte Bilder | Werden meist übersprungen. Zum Vergleich `dartscounter.camera.fast-decode=false` setzen. USB-Hub mit eigenem Netzteil verwenden. |
 | Pi hängt komplett, sobald Kameras laufen | Überlastung oder Strom | Neueste Version einspielen (640×480), Kameras einzeln dazunehmen, Strom prüfen. |
 
 Hilft nichts davon: die genaue Meldung und die Ausgabe von `journalctl -u darts -n 50` kopieren und nachfragen.
