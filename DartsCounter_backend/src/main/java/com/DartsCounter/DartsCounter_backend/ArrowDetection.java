@@ -87,8 +87,21 @@ public class ArrowDetection {
         DartFrameProcessor processor = new DartFrameProcessor(fps, stableFrames, processWidth, tipAtTop);
         Mat frame = new Mat();
         int frameCount = 0;
+        // Viele Kameras ignorieren die eingestellte Bildrate und liefern 30 Bilder/s. Ausgewertet werden nur so viele,
+        // wie in dartscounter.camera.fps steht; die übrigen werden nur abgeholt (grab), nicht entpackt.
+        long intervalNs = 1_000_000_000L / Math.max(1, fps);
+        long nextFrameNs = System.nanoTime();
         try {
-            while (running.get() && capture.read(frame)) {
+            while (running.get()) {
+                if (live) {
+                    if (!capture.grab()) break;
+                    long now = System.nanoTime();
+                    if (now < nextFrameNs) continue; // zu früh: überspringen
+                    nextFrameNs = Math.max(nextFrameNs + intervalNs, now - intervalNs);
+                    if (!capture.retrieve(frame)) break;
+                } else if (!capture.read(frame)) {
+                    break; // Videodatei zu Ende
+                }
                 // Weißabgleich nach der Anlaufzeit festhalten: sonst springt das Bild und alles gilt als Bewegung
                 if (live && lockWhiteBalance && frameCount == fps * 2) capture.set(Videoio.CAP_PROP_AUTO_WB, 0);
 
