@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
@@ -110,8 +111,11 @@ public class ArrowDetection {
         capture.set(Videoio.CAP_PROP_FRAME_WIDTH, widthPx);
         capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, heightPx);
         capture.set(Videoio.CAP_PROP_FPS, fps); // weniger Bilder pro Sekunde entlasten den Pi
+        // Schnell entpacken: die rohen JPEG-Daten holen und gleich in halber Größe entpacken (etwa doppelt so schnell),
+        // wenn ohnehin auf halber Breite gerechnet wird. Liefert die Kamera keine Rohdaten, normal weiter.
+        boolean fastDecode = live && processWidth * 2 <= widthPx && capture.set(Videoio.CAP_PROP_CONVERT_RGB, 0);
         System.out.println("Kamera " + (camera + 1) + ": " + capture.get(Videoio.CAP_PROP_FRAME_WIDTH) + "x"
-                + capture.get(Videoio.CAP_PROP_FRAME_HEIGHT));
+                + capture.get(Videoio.CAP_PROP_FRAME_HEIGHT) + (fastDecode ? ", schnelles Entpacken" : ""));
 
         if (saveFrames) {
             new File("subFrames").mkdirs();
@@ -119,6 +123,7 @@ public class ArrowDetection {
 
         DartFrameProcessor processor = new DartFrameProcessor(fps, stableFrames, processWidth, tipAtTop);
         Mat frame = new Mat();
+        Mat raw = new Mat();
         int frameCount = 0;
         // Viele Kameras ignorieren die eingestellte Bildrate und liefern 30 Bilder/s. Ausgewertet werden nur so viele,
         // wie in dartscounter.camera.fps steht; die übrigen werden nur abgeholt (grab), nicht entpackt.
@@ -136,7 +141,22 @@ public class ArrowDetection {
                     long now = System.nanoTime();
                     if (now < nextFrameNs) continue; // zu früh: überspringen
                     nextFrameNs = Math.max(nextFrameNs + intervalNs, now - intervalNs);
-                    if (!capture.retrieve(frame)) break;
+                    if (fastDecode) {
+                        if (!capture.retrieve(raw)) break;
+                        if (raw.rows() == 1 && raw.type() == CvType.CV_8UC1) {
+                            Mat decoded = Imgcodecs.imdecode(raw, Imgcodecs.IMREAD_REDUCED_COLOR_2);
+                            if (decoded.empty()) continue; // kaputtes JPEG: Bild überspringen
+                            decoded.copyTo(frame);
+                            decoded.release();
+                        } else {
+                            // Kamera liefert schon entpackte Bilder: normaler Weg
+                            fastDecode = false;
+                            capture.set(Videoio.CAP_PROP_CONVERT_RGB, 1);
+                            if (raw.channels() == 3) raw.copyTo(frame); else continue;
+                        }
+                    } else if (!capture.retrieve(frame)) {
+                        break;
+                    }
                 } else {
                     // Videodatei: so viele Bilder überspringen, dass die Bildrate passt
                     for (int i = 1; i < fileStep; i++) capture.grab();
@@ -156,9 +176,11 @@ public class ArrowDetection {
                 // Weißabgleich nach der Anlaufzeit festhalten: sonst springt das Bild und alles gilt als Bewegung
                 if (live && lockWhiteBalance && frameCount == fps * 2) capture.set(Videoio.CAP_PROP_AUTO_WB, 0);
 
+                // Spalten immer in der vollen Kamera-Auflösung melden (die Kalibrierung rechnet damit)
+                double toFullPx = frame.cols() < widthPx ? (double) widthPx / frame.cols() : 1;
                 for (double x : processor.process(frame)) {
-                    collector.report(camera, x);
-                    diag.reported(x);
+                    collector.report(camera, x * toFullPx);
+                    diag.reported(x * toFullPx);
                 }
                 // Diagnose: tatsächliche Bildrate und alle 4 Bilder ein Vorschaubild
                 fpsWindowFrames++;
@@ -168,7 +190,7 @@ public class ArrowDetection {
                     fpsWindowStart = now;
                     fpsWindowFrames = 0;
                 }
-                double toCameraPx = processor.lastWork == null ? 1 : (double) frame.cols() / processor.lastWork.cols();
+                double toCameraPx = processor.lastWork == null ? 1 : (double) frame.cols() / processor.lastWork.cols() * toFullPx;
                 diag.frame(processor, measuredFps, frameCount + 1, frameCount % 4 == 0, toCameraPx);
 
                 if (saveFrames && frameCount % 2 == 0) {
@@ -179,6 +201,7 @@ public class ArrowDetection {
         } finally {
             capture.release();
             frame.release();
+            raw.release();
             processor.release();
         }
         diag.state("beendet");

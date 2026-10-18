@@ -31,7 +31,7 @@ class RecordingReplayTest {
             File file = new File(dir, files[cam]);
             if (!file.exists()) continue;
             VideoCapture cap = new VideoCapture(file.getPath());
-            DartFrameProcessor processor = new DartFrameProcessor(fps / step, 3, 640, true);
+            DartFrameProcessor processor = new DartFrameProcessor(fps / step, 3, Integer.parseInt(System.getProperty("width", "640")), true);
             Mat frame = new Mat();
             int f = 0;
             StringBuilder reports = new StringBuilder();

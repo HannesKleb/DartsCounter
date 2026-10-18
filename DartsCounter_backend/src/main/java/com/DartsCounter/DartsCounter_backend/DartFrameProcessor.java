@@ -34,18 +34,28 @@ class DartFrameProcessor {
     static final double GLOBAL_CHANGE_SHARE = 0.15;
     // ändert sich mehr als dieser Anteil, ist eine Hand oder ein Arm im Bild (Pfeile allein: 1-2 %)
     static final double BIG_MOTION_SHARE = 0.035;
+    // so viel der kleinen Vorschau ändert sich bei einem kaputten Bild oder Lichtsprung von einem Bild aufs nächste
+    static final double GLITCH_SHARE = 0.25;
 
     private final int fps;
     private final int stableFrames;
     private final int processWidth;
     private final boolean tipAtTop;
 
-    private BackgroundSubtractorMOG2 backSub = Video.createBackgroundSubtractorMOG2();
+    // ohne Schattenerkennung: spart viel Rechenzeit, Schatten würden ohnehin verworfen
+    private BackgroundSubtractorMOG2 backSub = newBackSub();
     private DartTracker tracker;
     private Size blurSize;
     private Mat openKernel;
     private Mat closeKernel;
     private final Mat small = new Mat();
+    // kleine Vorschau zum Erkennen kaputter Einzelbilder (Kamera liefert manchmal zerrissene Bilder)
+    private final Mat tiny = new Mat();
+    private final Mat prevTiny = new Mat();
+    private final Mat tinyDiff = new Mat();
+    private int glitchFrames;
+    private int skipped;
+    private int learnedFrames; // Bilder seit dem (Neu-)Start der Hintergrund-Erkennung
     private final Mat mask = new Mat();
     private final Mat tmp = new Mat();
     private int resets;
@@ -68,6 +78,14 @@ class DartFrameProcessor {
         return resets;
     }
 
+    int skipped() {
+        return skipped;
+    }
+
+    private static BackgroundSubtractorMOG2 newBackSub() {
+        return Video.createBackgroundSubtractorMOG2(500, 16, false);
+    }
+
     /** @return Spalten (im Kamerabild) der Pfeile, die mit diesem Bild neu erkannt wurden */
     List<Double> process(Mat frame) {
         Mat work = frame;
@@ -80,14 +98,43 @@ class DartFrameProcessor {
         if (tracker == null) init(work, toCameraPx);
         lastWork = work;
 
+        // Kaputtes oder verrutschtes Einzelbild (oder Lichtsprung)? Mit einer 80x60-Vorschau gegen das letzte gute Bild
+        // vergleichen. Einzelne solche Bilder überspringen, ohne den Hintergrund zu verderben; hält es länger als 2 s an,
+        // war es ein echter Lichtwechsel und der Hintergrund wird neu gelernt.
+        Imgproc.resize(work, tiny, new Size(80, 60), 0, 0, Imgproc.INTER_AREA);
+        if (!prevTiny.empty()) {
+            Core.absdiff(tiny, prevTiny, tinyDiff);
+            if (tinyDiff.channels() > 1) Imgproc.cvtColor(tinyDiff, tinyDiff, Imgproc.COLOR_BGR2GRAY);
+            Imgproc.threshold(tinyDiff, tinyDiff, 40, 255, Imgproc.THRESH_BINARY);
+            double glitch = (double) Core.countNonZero(tinyDiff) / tinyDiff.total();
+            if (glitch > GLITCH_SHARE) {
+                if (++glitchFrames < fps * 2) {
+                    skipped++;
+                    return List.of();
+                }
+                backSub = newBackSub(); // dauerhafter Wechsel: neu lernen
+                learnedFrames = 0;
+                tracker.reset(fps);
+                resets++;
+            }
+        }
+        glitchFrames = 0;
+        tiny.copyTo(prevTiny);
+
         backSub.apply(work, mask);
         // Schatten (Grauwert 127) und unsichere Pixel verwerfen, nur echte Veränderung (255) behalten
         Imgproc.threshold(mask, mask, 200, 255, Imgproc.THRESH_BINARY);
 
         double changed = (double) Core.countNonZero(mask) / mask.total();
+        // in den ersten Bildern nach dem Start ist naturgemäß alles "neu"
+        if (++learnedFrames <= 3) {
+            mask.setTo(new org.opencv.core.Scalar(0));
+            changed = 0;
+        }
         if (changed > GLOBAL_CHANGE_SHARE) {
             // Lichtwechsel: Hintergrund neu lernen statt lauter Fehlalarme
-            backSub = Video.createBackgroundSubtractorMOG2();
+            backSub = newBackSub();
+            learnedFrames = 0;
             tracker.reset(fps);
             resets++;
             mask.copyTo(cleaned);
@@ -113,10 +160,10 @@ class DartFrameProcessor {
     }
 
     private void init(Mat work, double toCameraPx) {
-        double k = work.cols() / REFERENCE_WIDTH;
-        long blur = Math.max(5, Math.round(7 * k));
+        // Filtergrößen passend zur Bildbreite: 640 px -> 5, 320 px -> 3 (dünne Schäfte dürfen nicht verschwinden)
+        long blur = Math.max(3, Math.round(work.cols() / 128.0));
         blurSize = new Size(blur, blur);
-        long side = Math.max(5, Math.round(10 * k));
+        long side = Math.max(3, Math.round(work.cols() / 128.0));
         openKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(side, side));
         closeKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, Math.max(9, Math.round(work.rows() * 0.05))));
         // Toleranzen: 2 % der Breite, 4 % der Höhe; Anlaufzeit 2 s, nach Hand 1,5 s Ruhe an alten Stellen,
@@ -172,6 +219,9 @@ class DartFrameProcessor {
 
     void release() {
         small.release();
+        tiny.release();
+        prevTiny.release();
+        tinyDiff.release();
         mask.release();
         tmp.release();
         cleaned.release();
