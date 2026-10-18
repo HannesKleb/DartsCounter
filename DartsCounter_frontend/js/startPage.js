@@ -13,7 +13,16 @@ async function initStart() {
     buildEdge();
     initBoardControls();
     applyView(false);
-    await fillStats();
+    await Promise.all([fillStats(), showConnection()]);
+}
+
+// Statuszeile über der Begrüßung: ist das Backend auf dem Pi erreichbar?
+async function showConnection() {
+    const online = await testBackend();
+    document.getElementById("hero-status").classList.toggle("offline", !online);
+    document.getElementById("hero-status-text").textContent = online
+        ? "Mit dem Pi verbunden"
+        : "Offline, Spiele werden im Browser gespeichert";
 }
 
 /********* Scheibe *********/
@@ -67,6 +76,7 @@ function initBoardControls() {
         drag = { x: event.clientX, y: event.clientY, vx: 0, vy: 0 };
         stage.setPointerCapture(event.pointerId);
         stage.classList.add("dragging");
+        document.body.classList.add("board-dragging");
         applyView(false);
     });
     stage.addEventListener("pointermove", (event) => {
@@ -83,6 +93,7 @@ function initBoardControls() {
         const { vx, vy } = drag;
         drag = null;
         stage.classList.remove("dragging");
+        document.body.classList.remove("board-dragging");
         if (!prefersReducedMotion() && (Math.abs(vx) > 0.4 || Math.abs(vy) > 0.4)) coast(vx, vy);
         else applyView(true);
     };

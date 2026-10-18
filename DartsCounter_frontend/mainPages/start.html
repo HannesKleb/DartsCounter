@@ -14,10 +14,18 @@
     <script src="../js/startPage.js" defer></script>
 </head>
 <body class="start-page">
-    <div class="header">
-        <h1>Darts Counter</h1>
+    <div class="header start-header">
+        <a class="brand" href="start.html"><span class="brand-dot" aria-hidden="true"></span>DartsCounter</a>
+        <nav class="top-nav" aria-label="Hauptmenü">
+            <a href="start.html" aria-current="page">Spielen</a>
+            <a href="player.html">Spieler</a>
+            <a href="stats.html">Statistik</a>
+            <a href="allGames.html">Verlauf</a>
+            <a href="settings.html">Mehr</a>
+        </nav>
     </div>
     <div class="content hero">
+        <div class="board-column">
         <section class="board-stage" id="board-stage" aria-label="Dartscheibe, zum Drehen ziehen">
             <div class="board-floor" aria-hidden="true"></div>
             <div class="board-sway">
@@ -40,7 +48,14 @@
                 </div>
             </div>
         </section>
+            <div class="hero-board-buttons">
+                <button class="pill-btn" id="explode-btn">Aufbau zeigen</button>
+                <button class="pill-btn" id="spin-btn">Einmal drehen</button>
+                <span class="hint">Scheibe ziehen zum Drehen</span>
+            </div>
+        </div>
         <section class="hero-text">
+            <p class="hero-status" id="hero-status"><span class="status-dot" aria-hidden="true"></span><span id="hero-status-text">Verbindung wird geprüft …</span></p>
             <h2 id="greeting">Hallo.</h2>
             <p class="hero-sub" id="last-game">Noch keine Spiele gespeichert.</p>
             <div class="hero-stats">
@@ -49,13 +64,8 @@
                 <div class="hero-stat"><strong id="stat-checkout">–</strong><span>Bestes Checkout</span></div>
             </div>
             <div class="hero-buttons">
-                <button class="primary-btn" id="new-game-btn" onclick="bar('index.html')">Neues Spiel</button>
-                <button class="input-btn" id="second-btn" hidden></button>
-            </div>
-            <div class="hero-board-buttons">
-                <button class="ghost-btn" id="explode-btn">Aufbau zeigen</button>
-                <button class="ghost-btn" id="spin-btn">Einmal drehen</button>
-                <span class="hint">Scheibe ziehen zum Drehen</span>
+                <button class="pill-btn solid" id="new-game-btn" onclick="bar('index.html')">Neues Spiel</button>
+                <button class="pill-btn" id="second-btn" hidden></button>
             </div>
         </section>
     </div>

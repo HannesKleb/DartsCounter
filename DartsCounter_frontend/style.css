@@ -57,6 +57,14 @@
     src: url("resources/fonts/barlow-condensed-700-latin.woff2") format("woff2");
 }
 
+/* nur für große Überschriften auf der Startseite */
+@font-face {
+    font-family: "Bricolage Grotesque";
+    font-weight: 700;
+    font-display: swap;
+    src: url("resources/fonts/bricolage-grotesque-700-latin.woff2") format("woff2");
+}
+
 :root {
     color-scheme: dark;
     /* Grund */
@@ -1704,9 +1712,12 @@ button:active:not(:disabled) {
     opacity: 1;
 }
 .hero-text h2 {
-    font-size: clamp(2.5rem, 1.5rem + 3vw, 3.75rem);
-    line-height: 1;
-    margin: 0;
+    margin: 14px 0 0;
+    font-family: "Bricolage Grotesque", var(--font-display);
+    font-size: clamp(2.5rem, 1.6rem + 2.6vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
 }
 .hero-sub {
     margin: var(--space-2) 0 0;
@@ -1772,6 +1783,143 @@ button:active:not(:disabled) {
 @media (prefers-reduced-motion: reduce) {
     .board-sway, .board-3d {
         animation: none;
+    }
+}
+
+/* Startseite wie im Entwurf: neutrales Schwarz, Menü oben, weiße Pill-Knöpfe */
+body.start-page {
+    --bg: #0B0B0B;
+    --surface-1: #121212;
+    --surface-2: #171717;
+    --surface-3: #262626;
+    --line: #262626;
+    --line-strong: #3A3A3A;
+    --text: #F5F5F5;
+    --text-2: #D4D4D4;
+    --muted: #A1A1A1;
+}
+/* html liegt außerhalb von body, kennt dessen Farben nicht: Schwarz direkt angeben */
+html:has(body.start-page) {
+    background: #0B0B0B;
+}
+.start-header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    min-height: 44px;
+    padding: var(--space-1) 0;
+}
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    text-decoration: none;
+    font-family: "Bricolage Grotesque", var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+.brand-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #C8302A;
+}
+.top-nav {
+    display: flex;
+    gap: 28px;
+}
+.top-nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: var(--text-base);
+}
+.top-nav a[aria-current="page"] {
+    color: var(--text);
+    font-weight: 500;
+}
+@media (hover: hover) {
+    .top-nav a:hover {
+        color: var(--text);
+    }
+}
+.board-column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+}
+body.board-dragging {
+    user-select: none;
+    -webkit-user-select: none;
+}
+.hero-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2E9E5B;
+}
+.hero-status.offline .status-dot {
+    background: var(--warn);
+}
+.hero-stat {
+    background: var(--surface-2);
+    border: none;
+    border-radius: 16px;
+}
+/* Pill-Knöpfe: "solid" in Textfarbe gefüllt, sonst nur Rand */
+.pill-btn {
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: var(--pill);
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--text);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+.pill-btn.solid {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+}
+@media (hover: hover) {
+    .pill-btn:not(.solid):hover {
+        background: var(--surface-2);
+    }
+    .pill-btn.solid:hover {
+        filter: brightness(0.9);
+    }
+}
+.hero-buttons .pill-btn {
+    min-height: var(--touch);
+    font-size: var(--text-lg);
+}
+.hero-board-buttons {
+    justify-content: center;
+    margin-top: var(--space-1);
+}
+/* großer Bildschirm: Menü oben wie im Entwurf, Leiste unten nur am Handy */
+@media (min-width: 901px) {
+    .start-page .bar {
+        display: none;
+    }
+    body.start-page {
+        padding-bottom: var(--space-3);
+    }
+}
+@media (max-width: 900px) {
+    .top-nav {
+        display: none;
     }
 }
 
