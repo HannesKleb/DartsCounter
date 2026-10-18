@@ -52,6 +52,10 @@ class DartFrameProcessor {
 
     /** fertig verarbeitete Maske des letzten Bildes (für Debug-Bilder) */
     final Mat cleaned = new Mat();
+    /** zuletzt ausgewertetes (ggf. verkleinertes) Bild und die darin gefundenen Spitzen, für die Diagnose */
+    Mat lastWork;
+    volatile List<DartTracker.Tip> lastTips = List.of();
+    volatile boolean lastBigMotion;
 
     DartFrameProcessor(int fps, int stableFrames, int processWidth, boolean tipAtTop) {
         this.fps = fps;
@@ -74,6 +78,7 @@ class DartFrameProcessor {
             work = small;
         }
         if (tracker == null) init(work, toCameraPx);
+        lastWork = work;
 
         backSub.apply(work, mask);
         // Schatten (Grauwert 127) und unsichere Pixel verwerfen, nur echte Veränderung (255) behalten
@@ -86,6 +91,8 @@ class DartFrameProcessor {
             tracker.reset(fps);
             resets++;
             mask.copyTo(cleaned);
+            lastTips = List.of();
+            lastBigMotion = true;
             return List.of();
         }
 
@@ -96,6 +103,8 @@ class DartFrameProcessor {
         Imgproc.threshold(cleaned, cleaned, 127, 255, Imgproc.THRESH_BINARY);
 
         Detection d = findTips(cleaned, tipAtTop);
+        lastTips = d.tips();
+        lastBigMotion = d.bigMotion() || changed > BIG_MOTION_SHARE;
         List<Double> found = tracker.update(d.tips(), d.bigMotion() || changed > BIG_MOTION_SHARE);
         if (toCameraPx == 1) return found;
         List<Double> scaled = new ArrayList<>(found.size());

@@ -216,7 +216,16 @@ So erkennt die Software die Pfeile am besten:
 - Die Halterungen dürfen sich nicht bewegen. Wird eine Kamera angestoßen, entstehen Fehlalarme, und es muss neu kalibriert werden.
 - Den Weißabgleich hält das Backend nach 2 Sekunden fest (`dartscounter.camera.lock-white-balance=true`). Ohne das springen die Farben mehrmals pro Minute.
 
-### 6.4 Kalibrieren
+### 6.4 Diagnose: Was sehen die Kameras?
+
+**Browser:** `http://darts-counter:8080/services/debug`
+
+- Zeigt alle drei Kamerabilder, jede Sekunde neu. **Rot** = Veränderung gegenüber dem Hintergrund, **grün** = erkannte Pfeilspitze mit Pixelspalte.
+- Darunter pro Kamera: läuft sie, wie viele Bilder pro Sekunde, wie viele Pfeile gemeldet wurden.
+- Die Kameras laufen nur während einer Kalibrierung oder nach „Kameras starten“ auf der Seite.
+- Wird ein Pfeil nicht erkannt: Seite offen lassen, werfen, Bildschirmfoto machen. Daran sieht man, ob die Kamera den Pfeil sieht und ob er rot markiert wird.
+
+### 6.5 Kalibrieren
 
 1. App → **Einstellungen** → **Kameras kalibrieren** → **Kalibrierung starten**.
 2. Pfeil werfen, warten bis „Wurf erkannt“ erscheint.
@@ -229,7 +238,7 @@ Würfe, die gar nicht passen (z. B. falsch angeklickt), sortiert die Kalibrierun
 
 Neu kalibrieren, wenn eine Kamera verstellt wurde oder die Auflösung geändert wurde.
 
-### 6.5 Testaufnahmen machen (zum Verbessern der Erkennung)
+### 6.6 Testaufnahmen machen (zum Verbessern der Erkennung)
 
 Nimmt mit allen drei Kameras gleichzeitig 45 Sekunden auf. Damit kann die Erkennung am PC mit echten Bildern geprüft werden.
 

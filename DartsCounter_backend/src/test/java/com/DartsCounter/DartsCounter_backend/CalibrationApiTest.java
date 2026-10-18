@@ -143,6 +143,15 @@ class CalibrationApiTest {
     }
 
     @Test
+    void diagnosticsWithoutRunningCameras() throws Exception {
+        mvc.perform(get("/services/debug/cameras")).andExpect(status().isOk());
+        mvc.perform(get("/services/debug/camera/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").exists());
+        mvc.perform(get("/services/debug")).andExpect(status().isOk());
+    }
+
+    @Test
     void clickOutsideBoardRejected() throws Exception {
         call("/services/calibration/start", null, 200);
         throwAt(10, 10, new Random(9));

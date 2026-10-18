@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,6 +100,54 @@ public class ServiceController {
     @PostMapping("/calibration/cancel")
     public CalibrationService.Status cancelCalibration() {
         return calibration.cancel();
+    }
+
+    /********* Diagnose *********/
+
+    // Zustand aller Kameras: läuft, Bilder/s, Meldungen, gerade erkannte Spitzen
+    @GetMapping("/debug/cameras")
+    public List<CameraDiagnostics.Status> cameraStatus() {
+        return arrowDetection.diagnostics();
+    }
+
+    // aktuelles Bild einer Kamera (1, 2, 3) mit eingezeichneter Erkennung
+    @GetMapping("/debug/camera/{camera}")
+    public ResponseEntity<byte[]> cameraImage(@PathVariable("camera") int camera) {
+        CameraDiagnostics d = arrowDetection.diagnostics(camera - 1);
+        byte[] jpeg = d == null ? null : d.jpeg();
+        if (jpeg == null) throw new ApiException(HttpStatus.NOT_FOUND, "Kamera läuft nicht. Erst Kalibrierung starten.");
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).header("Cache-Control", "no-store").body(jpeg);
+    }
+
+    // einfache Seite mit allen Kamerabildern, aktualisiert sich jede Sekunde
+    @GetMapping(value = "/debug", produces = MediaType.TEXT_HTML_VALUE)
+    public String debugPage() {
+        StringBuilder imgs = new StringBuilder();
+        for (int cam = 1; cam <= cameras.length; cam++) {
+            imgs.append("<figure><img id=\"c").append(cam).append("\" alt=\"Kamera ").append(cam)
+                    .append("\"><figcaption>Kamera ").append(cam).append("</figcaption></figure>");
+        }
+        return """
+                <!doctype html><html lang="de"><head><meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Kamera-Diagnose</title>
+                <style>body{font-family:sans-serif;background:#111;color:#eee;margin:16px}
+                figure{display:inline-block;margin:0 12px 12px 0}img{width:min(480px,100%%);background:#333;display:block}
+                pre{background:#222;padding:8px;white-space:pre-wrap}</style></head><body>
+                <h1>Kamera-Diagnose</h1>
+                <p>Rot: Veränderung gegenüber dem Hintergrund. Grün: erkannte Pfeilspitze. Die Kameras laufen nur,
+                solange eine Kalibrierung oder die Erkennung gestartet ist.</p>
+                <p><button onclick="fetch('setRunning/true',{method:'POST'})">Kameras starten</button>
+                <button onclick="fetch('setRunning/false',{method:'POST'})">Kameras stoppen</button></p>
+                %s<pre id="s">lädt …</pre>
+                <script>
+                setInterval(async () => {
+                  document.querySelectorAll('img').forEach((img, i) => { img.src = 'debug/camera/' + (i + 1) + '?t=' + Date.now(); });
+                  try { const r = await fetch('debug/cameras'); document.getElementById('s').textContent = JSON.stringify(await r.json(), null, 2); }
+                  catch (e) { document.getElementById('s').textContent = 'Backend nicht erreichbar'; }
+                }, 1000);
+                </script></body></html>
+                """.formatted(imgs);
     }
 
     /********* Testen ohne Kameras *********/
